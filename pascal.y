@@ -1,5 +1,6 @@
 %{
     #include "expression.hpp"
+    #include "context.hpp"
     #include "pascal.hpp"
 
     #include <map>
@@ -7,32 +8,26 @@
     extern int yylex();
     void yyerror(const char *s) { std::cerr << "Grammar error: " << std::string(s) << std::endl; }
 
-    std::map<std::string, lvalue_expression<int>> int_vars;
-
-    void put_variable(const std::string& name, const std::string& value)
-    {
-        int_vars.insert(std::make_pair(name, lvalue_expression<int>(0)));
-    }
-
-    lvalue_expression<int>& get_variable(const std::string& name)
-    {
-        return int_vars.at(name);
-    }
+    context global;
 %}
 
 %union {
-    std::string* text;
+    std::string* str_value;
+    std::list<std::string>* str_values;
+
     int int_value;
+
     expression<int>* int_expr;
     lvalue_expression<int>* lvalue_int_expr;
     expression<void>* void_expr;
 }
 
-%token <text> T_IDENTIFIER
+%token <str_value> T_IDENTIFIER
 %token <int_value> T_INTEGER
 %token  T_PROGRAM T_VAR T_BEGIN T_END
-%token  T_ASSIGN T_PLUS T_STAR T_OPEN T_CLOSE T_SEMICOL T_COL
+%token  T_ASSIGN T_PLUS T_STAR T_OPEN T_CLOSE T_SEMICOL T_COL T_COMMA
 
+%type <str_values> id_list
 %type <int_expr> int_expression prior_int_expression simple_int_expression
 %type <lvalue_int_expr> lvalue_int_expression
 %type <void_expr> void_expression
@@ -40,20 +35,28 @@
 %%
 
 program:
-    header varsection codeblock
+    header optional_varsection codeblock
 
 header:
     T_PROGRAM T_IDENTIFIER T_SEMICOL
+
+optional_varsection:
+    /* empty */
+    | varsection
 
 varsection:
     T_VAR T_COL vardecls
 
 vardecls:
-    vardecl T_SEMICOL
-    | vardecls vardecl
+    vardecl
+    | vardecls T_SEMICOL vardecl
 
 vardecl:
-    T_IDENTIFIER T_COL T_IDENTIFIER         { put_variable(*$1, *$3); }
+    id_list T_COL T_IDENTIFIER              { for (std::string& id : *$1) global.put_variable(id, *$3); }
+
+id_list:
+    T_IDENTIFIER                            { $$ = new std::list<std::string>(); $$->push_front(*$1); }
+    | id_list T_COMMA T_IDENTIFIER          { $1->push_front(*$3); }
 
 codeblock:
     T_BEGIN optional_expressions T_END
@@ -81,11 +84,11 @@ prior_int_expression:
                                             { $$ = new binary_expression<int>(*$1, '*', *$3); }
 simple_int_expression:
     T_INTEGER                               { $$ = new const_expression<int>($1); }
-    | lvalue_int_expression
+    | lvalue_int_expression                 { $$ = $1; /* to avoid warning */ }
     | T_OPEN int_expression T_CLOSE         { $$ = $2; }
 
 lvalue_int_expression:
-    T_IDENTIFIER                          { $$ = &get_variable(*$1); }
+    T_IDENTIFIER                          { $$ = &global.get_variable<int>(*$1); }
 
 void_expression:
     lvalue_int_expression T_ASSIGN int_expression    { $$ = new assign_expression<int>(*$1, *$3); }

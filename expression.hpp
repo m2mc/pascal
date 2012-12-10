@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <list>
 #include <iostream>
 
 template <typename Type>
