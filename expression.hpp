@@ -1,104 +1,67 @@
 #pragma once
 
+#include "types.hpp"
+#include "context.hpp"
+
 #include <string>
 #include <list>
 #include <memory>
 #include <iostream>
 
-template <typename Type>
 class expression
 {
 public:
     virtual ~expression();
-    virtual Type eval() = 0;
+    virtual type&& eval() = 0;
 };
 
-template <typename Type>
-class const_expression : public expression<Type>
+class const_expression : public expression
 {
 public:
-    const_expression(Type value);
-    Type eval();
+    const_expression(type& value);
+    type&& eval();
 private:
-    Type value;
+    type& value;
 };
 
-class lvalue_expression
+class dynamic_expression : public expression
 {
 public:
-    lvalue_expression(std::string name);
-
-    template <typename Type>
-    void set(Type new_value);
-
-    int eval_int();
-    bool eval_bool();
-
-    void set(lvalue_expression& right);
+    dynamic_expression(const std::string& id, context& ctxt);
+    type&& eval();
 private:
-
+    std::string id;
+    context& ctxt;
 };
 
-template <typename Type>
-class static_expression : public expression<Type>
+class binary_expression : public expression
 {
 public:
-    static_expression(lvalue_expression& dynamic);
-    Type eval();
-};
-
-template <typename Type, typename Argtype>
-class binary_expression : public expression<Type>
-{
-public:
-    binary_expression(expression<Argtype>& left, char op, expression<Argtype>& right);
-    Type eval();
+    binary_expression(expression& left,
+                      char op,
+                      expression& right);
+    type&& eval();
 private:
-    expression<Argtype>& left;
+    expression& left;
     char op;
-    expression<Argtype>& right;
+    expression& right;
 };
 
-template <typename Type>
-class assign_expression : public expression<void>
+class expression_list : public expression
 {
 public:
-    assign_expression(lvalue_expression& left, expression<Type>& right);
-    void eval();
+    void push_back(expression& next);
+    type&& eval();
 private:
-    lvalue_expression& left;
-    expression<Type>& right;
+    std::list<std::unique_ptr<expression>> list;
 };
 
-template <typename Type>
-class void_wrap : public expression<void>
+class if_expression : public expression
 {
 public:
-    void_wrap(expression<Type>& wrapped);
-    void eval();
+    if_expression(expression& condition, expression& body);
+    type&& eval();
 private:
-    expression<Type>& wrapped;
+    expression& condition;
+    expression& body;
 };
-
-class expression_list : public expression<void>
-{
-public:
-    template <typename Type>
-    void push_back(expression<Type>& next);
-    void eval();
-private:
-    std::list<std::unique_ptr<expression<void>>> list;
-};
-
-template <typename Type>
-class if_expression : public expression<void>
-{
-public:
-    if_expression(expression<bool>& condition, expression<Type>& body);
-    void eval();
-private:
-    expression<bool>& condition;
-    expression<Type>& body;
-};
-
-#include "expression.inl"

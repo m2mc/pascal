@@ -2,6 +2,6 @@ pascal
 pascal.hpp
 pascal.cpp
 
-pascal.output
+*.output
 
 tokens.cpp

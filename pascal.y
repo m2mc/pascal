@@ -17,11 +17,7 @@
 
     int int_value;
 
-    expression<int>* int_expr;
-    expression<bool>* bool_expr;
-    expression<void>* void_expr;
-
-    lvalue_expression* lvalue_expr;
+    expression* expr;
 }
 
 %token <str_value> T_IDENTIFIER
@@ -33,12 +29,10 @@
 
 %type <str_values> id_list
 
-%type <int_expr> int_expression prior_int_expression simple_int_expression
-%type <bool_expr> bool_expression simple_bool_expression
-%type <void_expr> void_expression expressions optional_expressions codeblock expression_or_block
-%type <void_expr> if_expression
-
-%type <lvalue_expr> lvalue_expression
+%type <expr> expression prior_expression simple_expression
+%type <expr> expressions optional_expressions codeblock expression_or_block
+%type <expr> if_expression
+%type <expr> dynamic_expression
 
 %%
 
@@ -60,7 +54,7 @@ vardecls:
     | vardecls T_SEMICOL vardecl
 
 vardecl:
-    id_list T_COL T_IDENTIFIER              { for (std::string& id : *$1) global.put_variable(id, *$3); }
+    id_list T_COL T_IDENTIFIER              { /*for (std::string& id : *$1) global.put_variable(id, *$3); */ }
 
 id_list:
     T_IDENTIFIER                            { $$ = new std::list<std::string>(); $$->push_back(*$1); }
@@ -74,61 +68,41 @@ optional_expressions:
     | expressions
 
 expression_or_block:
-//    int_expression                          { $$ = new void_wrap(*$1); }
-//    | bool_expression                       { $$ = new void_wrap(*$1); }
-    void_expression
+    expression T_SEMICOL
     | codeblock
 
 expressions:
-    int_expression                          { $$ = new expression_list();
+    expression                              { $$ = new expression_list();
                                               dynamic_cast<expression_list*>($$)->push_back(*$1); }
-    | expressions T_SEMICOL int_expression  { dynamic_cast<expression_list*>($$)->push_back(*$3); }
-    | bool_expression                       { $$ = new expression_list();
-                                              dynamic_cast<expression_list*>($$)->push_back(*$1); }
-    | expressions T_SEMICOL bool_expression { dynamic_cast<expression_list*>($$)->push_back(*$3); }
-    | void_expression                         { $$ = new expression_list();
-                                              dynamic_cast<expression_list*>($$)->push_back(*$1); }
-    | expressions T_SEMICOL void_expression { dynamic_cast<expression_list*>($$)->push_back(*$3); }
-
-int_expression:
-    prior_int_expression
-    | int_expression T_PLUS prior_int_expression
-                                            { $$ = new binary_expression<int, int>(*$1, '+', *$3); }
-    | int_expression T_MINUS prior_int_expression
-                                            { $$ = new binary_expression<int, int>(*$1, '-', *$3); }
-
-prior_int_expression:
-    simple_int_expression
-    | prior_int_expression T_STAR simple_int_expression
-                                            { $$ = new binary_expression<int, int>(*$1, '*', *$3); }
-    | prior_int_expression T_SLASH simple_int_expression
-                                            { $$ = new binary_expression<int, int>(*$1, '/', *$3); }
-simple_int_expression:
-    T_INTEGER                               { $$ = new const_expression<int>($1); }
-    | T_OPEN int_expression T_CLOSE         { $$ = $2; }
-
-bool_expression:
-    simple_bool_expression
-    | int_expression T_EQ int_expression    { $$ = new binary_expression<bool, int>(*$1, '=', *$3); }
-
-simple_bool_expression:
-    T_TRUE                                  { $$ = new const_expression<bool>(true); }
-    | T_FALSE                               { $$ = new const_expression<bool>(false); }
-    | T_OPEN bool_expression T_CLOSE        { $$ = $2; }
-
-lvalue_expression:
-    T_IDENTIFIER                            { $$ = new lvalue_expression(*$1); }
-
-void_expression:
-    lvalue_expression T_ASSIGN int_expression
-                                            { $$ = new assign_expression<int>(*$1, *$3); }
-    | lvalue_expression T_ASSIGN bool_expression
-                                            { $$ = new assign_expression<bool>(*$1, *$3); }
+    | expressions T_SEMICOL expression      { dynamic_cast<expression_list*>($$)->push_back(*$3); }
+    
+expression:
+    prior_expression
+    | expression T_ASSIGN prior_expression  { $$ = new binary_expression(*$1, 'a', *$3); }
+    | expression T_EQ prior_expression      { $$ = new binary_expression(*$1, '=', *$3); }
+    | expression T_PLUS prior_expression    { $$ = new binary_expression(*$1, '+', *$3); }
+    | expression T_MINUS prior_expression   { $$ = new binary_expression(*$1, '-', *$3); }
     | if_expression
 
+prior_expression:
+    simple_expression
+    | prior_expression T_STAR simple_expression
+                                            { $$ = new binary_expression(*$1, '*', *$3); }
+    | prior_expression T_SLASH simple_expression
+                                            { $$ = new binary_expression(*$1, '/', *$3); }
+simple_expression:
+    T_INTEGER                               { $$ = new const_expression(*(new int_type($1))); }
+    | T_TRUE                                { $$ = new const_expression(*(new bool_type(true))); }
+    | T_FALSE                               { $$ = new const_expression(*(new bool_type(false))); }
+    | T_OPEN expression T_CLOSE             { $$ = $2; }
+    | dynamic_expression
+
+dynamic_expression:
+    T_IDENTIFIER                            { $$ = new dynamic_expression(*$1, global); }
+
 if_expression:
-    T_IF bool_expression T_THEN expression_or_block
-                                            { $$ = new if_expression<void>(*$2, *$4); } 
+    T_IF expression T_THEN expression_or_block     
+                                            { $$ = new if_expression(*$2, *$4); }
 
 %%
 
