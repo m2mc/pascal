@@ -54,7 +54,7 @@ vardecls:
     | vardecls T_SEMICOL vardecl
 
 vardecl:
-    id_list T_COL T_IDENTIFIER              { /*for (std::string& id : *$1) global.put_variable(id, *$3); */ }
+    id_list T_COL T_IDENTIFIER              { for (std::string& id : *$1) global.put(id, *$3); }
 
 id_list:
     T_IDENTIFIER                            { $$ = new std::list<std::string>(); $$->push_back(*$1); }

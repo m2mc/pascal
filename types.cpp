@@ -80,6 +80,9 @@ type&& int_type::operator==(type&& another)
     return std::move(*(new bool_type(value == casted.value)));
 }
 
+mutable_int_type::mutable_int_type() : int_type(0)
+{}
+
 type&& mutable_int_type::assign(type&& another)
 {
     int_type&& casted = dynamic_cast<int_type&&>(another);
@@ -95,7 +98,10 @@ bool bool_type::to_bool()
     return value;
 }
 
-type&& bool_type::assign(type&& another)
+mutable_bool_type::mutable_bool_type() : bool_type(false)
+{}
+
+type&& mutable_bool_type::assign(type&& another)
 {
     bool_type&& casted = dynamic_cast<bool_type&&>(another);
     value = casted.value;

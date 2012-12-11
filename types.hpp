@@ -31,6 +31,7 @@ public:
 class mutable_int_type : public int_type
 {
 public:
+    mutable_int_type();
     type&& assign(type&& another);
 };
 
@@ -39,9 +40,15 @@ class bool_type : public type
 public:
     bool_type(bool value);
     bool to_bool();
-    type&& assign(type&& another);
-protected:
+// protected:
     bool value;
+};
+
+class mutable_bool_type : public bool_type
+{
+public:
+    mutable_bool_type();
+    type&& assign(type&& another);
 };
 
 class void_type : public type

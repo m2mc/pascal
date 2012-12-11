@@ -19,8 +19,7 @@ id(id), ctxt(ctxt)
 
 type&& dynamic_expression::eval()
 {
-    return std::move(*(new void_type()));
-    // fill
+    return std::move(ctxt.get(id));
 }
 
 binary_expression::binary_expression(expression& left,
