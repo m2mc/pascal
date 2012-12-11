@@ -53,19 +53,19 @@ int int_type::to_int()
 type&& int_type::operator+(type&& another)
 {
     int_type&& casted = dynamic_cast<int_type&&>(another);
-    return std::move(*(new int_type(value / casted.value)));
+    return std::move(*(new int_type(value + casted.value)));
 }
 
 type&& int_type::operator-(type&& another)
 {
     int_type&& casted = dynamic_cast<int_type&&>(another);
-    return std::move(*(new int_type(value / casted.value)));
+    return std::move(*(new int_type(value - casted.value)));
 }
 
 type&& int_type::operator*(type&& another)
 {
     int_type&& casted = dynamic_cast<int_type&&>(another);
-    return std::move(*(new int_type(value / casted.value)));
+    return std::move(*(new int_type(value * casted.value)));
 }
 
 type&& int_type::operator/(type&& another)
@@ -87,7 +87,7 @@ type&& mutable_int_type::assign(type&& another)
 {
     int_type&& casted = dynamic_cast<int_type&&>(another);
     value = casted.value;
-    return std::move(casted);
+    return std::move(*(new void_type()));
 }
 
 bool_type::bool_type(bool value) : value(value)
@@ -105,5 +105,5 @@ type&& mutable_bool_type::assign(type&& another)
 {
     bool_type&& casted = dynamic_cast<bool_type&&>(another);
     value = casted.value;
-    return std::move(casted);
+    return std::move(*(new void_type())); 
 }

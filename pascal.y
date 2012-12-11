@@ -29,7 +29,7 @@
 
 %type <str_values> id_list
 
-%type <expr> expression prior_expression simple_expression
+%type <expr> expression expression_30 expression_20 expression_10 simple_expression
 %type <expr> expressions optional_expressions codeblock expression_or_block
 %type <expr> if_expression
 %type <expr> dynamic_expression
@@ -75,20 +75,26 @@ expressions:
     expression                              { $$ = new expression_list();
                                               dynamic_cast<expression_list*>($$)->push_back(*$1); }
     | expressions T_SEMICOL expression      { dynamic_cast<expression_list*>($$)->push_back(*$3); }
-    
+
 expression:
-    prior_expression
-    | expression T_ASSIGN prior_expression  { $$ = new binary_expression(*$1, 'a', *$3); }
-    | expression T_EQ prior_expression      { $$ = new binary_expression(*$1, '=', *$3); }
-    | expression T_PLUS prior_expression    { $$ = new binary_expression(*$1, '+', *$3); }
-    | expression T_MINUS prior_expression   { $$ = new binary_expression(*$1, '-', *$3); }
+    expression_30
     | if_expression
 
-prior_expression:
+expression_30:
+    expression_20
+    | expression_30 T_ASSIGN expression_20  { $$ = new binary_expression(*$1, 'a', *$3); }
+    | expression_30 T_EQ expression_20      { $$ = new binary_expression(*$1, '=', *$3); }
+
+expression_20:
+    expression_10
+    | expression_20 T_PLUS expression_10    { $$ = new binary_expression(*$1, '+', *$3); }
+    | expression_20 T_MINUS expression_10   { $$ = new binary_expression(*$1, '-', *$3); }
+
+expression_10:
     simple_expression
-    | prior_expression T_STAR simple_expression
+    | expression_10 T_STAR simple_expression
                                             { $$ = new binary_expression(*$1, '*', *$3); }
-    | prior_expression T_SLASH simple_expression
+    | expression_10 T_SLASH simple_expression
                                             { $$ = new binary_expression(*$1, '/', *$3); }
 simple_expression:
     T_INTEGER                               { $$ = new const_expression(*(new int_type($1))); }
