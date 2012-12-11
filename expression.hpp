@@ -2,6 +2,7 @@
 
 #include <string>
 #include <list>
+#include <memory>
 #include <iostream>
 
 template <typename Type>
@@ -22,38 +23,71 @@ private:
     Type value;
 };
 
-template <typename Type>
-class lvalue_expression : public expression<Type>
+class lvalue_expression
 {
 public:
-    lvalue_expression(Type value);
-    Type eval();
+    lvalue_expression(std::string name);
+
+    template <typename Type>
     void set(Type new_value);
+
+    int eval_int();
+    bool eval_bool();
+
+    void set(lvalue_expression& right);
 private:
-    Type value;
+
 };
 
 template <typename Type>
+class static_expression : public expression<Type>
+{
+public:
+    static_expression(lvalue_expression& dynamic);
+    Type eval();
+};
+
+template <typename Type, typename Argtype>
 class binary_expression : public expression<Type>
 {
 public:
-    binary_expression(expression<Type>& left, char op, expression<Type>& right);
+    binary_expression(expression<Argtype>& left, char op, expression<Argtype>& right);
     Type eval();
 private:
-    expression<Type>& left;
+    expression<Argtype>& left;
     char op;
-    expression<Type>& right;
+    expression<Argtype>& right;
 };
 
 template <typename Type>
 class assign_expression : public expression<void>
 {
 public:
-    assign_expression(lvalue_expression<Type>& left, expression<Type>& right);
+    assign_expression(lvalue_expression& left, expression<Type>& right);
     void eval();
 private:
-    lvalue_expression<Type>& left;
+    lvalue_expression& left;
     expression<Type>& right;
+};
+
+template <typename Type>
+class void_wrap : public expression<void>
+{
+public:
+    void_wrap(expression<Type>& wrapped);
+    void eval();
+private:
+    expression<Type>& wrapped;
+};
+
+class expression_list : public expression<void>
+{
+public:
+    template <typename Type>
+    void push_back(expression<Type>& next);
+    void eval();
+private:
+    std::list<std::unique_ptr<expression<void>>> list;
 };
 
 template <typename Type>

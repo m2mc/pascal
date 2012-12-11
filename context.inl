@@ -9,7 +9,7 @@ void context::put_variable(const std::string& name)
 template<>
 void context::put_variable<int>(const std::string& name)
 {
-    int_vars.insert(std::make_pair(name, lvalue_expression<int>(0)));
+    int_vars.insert(std::make_pair(name, lvalue_expression(0)));
 }
 
 void context::put_variable(const std::string& name, const std::string& type)
@@ -25,13 +25,13 @@ void context::put_variable(const std::string& name, const std::string& type)
 }
 
 template <typename Type>
-lvalue_expression<Type>& context::get_variable(const std::string& name)
+lvalue_expression& context::get_variable(const std::string& name)
 {
     throw std::invalid_argument("Unimplemented type of: " + name);
 }
 
 template <>
-lvalue_expression<int>& context::get_variable(const std::string& name)
+lvalue_expression& context::get_variable<int>(const std::string& name)
 {
     return int_vars.at(name);
 } 
