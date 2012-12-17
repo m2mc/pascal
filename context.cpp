@@ -30,7 +30,7 @@ type& mixed_context::get(const std::string& name)
 
 void mixed_context::put_local(context& next_local)
 {
-    local.push(std::shared_ptr<context>(&next_local));
+    local.push(std::unique_ptr<context>(&next_local));
 }
 
 void mixed_context::pop_local()

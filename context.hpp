@@ -32,5 +32,5 @@ public:
     void pop_local();
 private:
     context& global;
-    std::stack<std::shared_ptr<context>> local;
+    std::stack<std::unique_ptr<context>> local;
 };
