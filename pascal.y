@@ -9,8 +9,7 @@
     void yyerror(const char *s) { std::cerr << "Grammar error: " << std::string(s) << std::endl; }
 
     mutable_context global;
-    mutable_context local;
-    mixed_context general(global, local);
+    mixed_context general(global);
 %}
 
 %union {
@@ -47,7 +46,7 @@
 
 program:
     header function_decls optional_varsection codeblock
-                                            { local = *$3;
+                                            { general.put_local(*$3);
                                               $4->eval(); }
 
 header:
