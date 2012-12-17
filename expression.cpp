@@ -88,6 +88,5 @@ function_invoke_expression::function_invoke_expression(const std::string& id,
 
 type& function_invoke_expression::eval()
 {
-    // process arguments
     return ctxt.get(id).invoke();
 }

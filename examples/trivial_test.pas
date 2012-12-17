@@ -23,9 +23,11 @@ begin
     begin
 
     end;
-    
+
     if a then
     begin
 
-    end
+    end;
+
+    foo(42)
 end

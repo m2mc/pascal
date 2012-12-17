@@ -59,8 +59,9 @@ function_decls:
 function_decl:
     T_FUNCTION T_IDENTIFIER
     optional_signature_entries
-    T_COL T_IDENTIFIER codeblock
-                                            { global.declare(*$2, *(new invokeable_type())); }
+    T_COL T_IDENTIFIER
+    optional_varsection codeblock
+                                            { global.declare(*$2, *(new invokeable_type(*$6))); }
                             
 optional_signature_entries:
     /* empty */
@@ -117,7 +118,7 @@ optional_comma_expressions:
 comma_expressions:
     expression                              { $$ = new expression_list();
                                               dynamic_cast<expression_list*>($$)->push_back(*$1); }
-    | expressions T_COMMA expression        { dynamic_cast<expression_list*>($$)->push_back(*$3); }
+    | comma_expressions T_COMMA expression        { dynamic_cast<expression_list*>($$)->push_back(*$3); }
 
 expression:
     expression_30

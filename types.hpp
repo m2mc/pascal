@@ -2,6 +2,8 @@
 
 #include <list>
 
+class context;
+
 class type
 {
 public:
@@ -61,6 +63,8 @@ class void_type : public type
 class invokeable_type : public type
 {
 public:
-    invokeable_type();
+    invokeable_type(context& local_init);
     type& invoke();
+private:
+    context& local_init;
 };

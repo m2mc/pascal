@@ -13,7 +13,7 @@ void mutable_context::declare(const std::string& name, type& init_value)
 }
 
 mixed_context::mixed_context(context& global) :
-    global(global), local(local)
+    global(global)
 {}
 
 type& mixed_context::get(const std::string& name)

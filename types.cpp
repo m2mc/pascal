@@ -113,7 +113,8 @@ type& mutable_bool_type::assign(type& another)
     return *(new void_type()); 
 }
 
-invokeable_type::invokeable_type()
+invokeable_type::invokeable_type(context& local_init) :
+    local_init(local_init)
 {}
 
 type& invokeable_type::invoke()
