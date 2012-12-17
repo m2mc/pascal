@@ -9,8 +9,24 @@
 class context
 {
 public:
-    void put(const std::string& name, const std::string& type_name);
-    type& get(const std::string& name);
+    virtual type& get(const std::string& name) = 0;
+};
+
+class mutable_context : public context
+{
+public:
+    virtual type& get(const std::string& name);
+    virtual void declare(const std::string& name, type& init_value);
 private:
-    std::map<std::string, std::unique_ptr<type>> vars;
+    std::map<std::string, std::shared_ptr<type>> vars;
+};
+
+class mixed_context : public context
+{
+public:
+    mixed_context(context& global, context& local);
+    virtual type& get(const std::string& name);
+private:
+    context& global;
+    context& local;
 };

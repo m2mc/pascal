@@ -2,17 +2,28 @@
 
 #include <stdexcept>
 
-void context::put(const std::string& name, const std::string& type_name)
-{
-    if (type_name == "integer")
-        vars.insert(std::make_pair(name, std::unique_ptr<type>(new mutable_int_type())));
-    else if (type_name == "boolean")
-        vars.insert(std::make_pair(name, std::unique_ptr<type>(new mutable_bool_type())));
-    else
-        throw std::logic_error("Invalid type name: " + type_name);
-}
-
-type& context::get(const std::string& name)
+type& mutable_context::get(const std::string& name)
 {
     return *vars.at(name);
+}
+
+void mutable_context::declare(const std::string& name, type& init_value)
+{
+    vars.insert(std::make_pair(name, std::unique_ptr<type>(&init_value)));
+}
+
+mixed_context::mixed_context(context& global, context& local) :
+    global(global), local(local)
+{}
+
+type& mixed_context::get(const std::string& name)
+{
+    try
+    {
+        return local.get(name);
+    }
+    catch (std::exception e)
+    {
+        return global.get(name);
+    }
 }

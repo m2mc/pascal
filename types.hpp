@@ -1,14 +1,17 @@
 #pragma once
 
+#include <list>
+
 class type
 {
 public:
-    virtual type&& operator+(type&& another);
-    virtual type&& operator-(type&& another);
-    virtual type&& operator*(type&& another);
-    virtual type&& operator/(type&& another);
-    virtual type&& operator==(type&& another);
-    virtual type&& assign(type&& another);
+    virtual type& operator+(type& another);
+    virtual type& operator-(type& another);
+    virtual type& operator*(type& another);
+    virtual type& operator/(type& another);
+    virtual type& operator==(type& another);
+    virtual type& assign(type& another);
+    virtual type& invoke();
 
     virtual int to_int();
     virtual bool to_bool();
@@ -19,11 +22,11 @@ class int_type : public type
 public:
     int_type(int value);
     int to_int();
-    type&& operator+(type&& another);
-    type&& operator-(type&& another);
-    type&& operator*(type&& another);
-    type&& operator/(type&& another);
-    type&& operator==(type&& another);
+    type& operator+(type& another);
+    type& operator-(type& another);
+    type& operator*(type& another);
+    type& operator/(type& another);
+    type& operator==(type& another);
 // protected:
     int value;
 };
@@ -32,7 +35,7 @@ class mutable_int_type : public int_type
 {
 public:
     mutable_int_type();
-    type&& assign(type&& another);
+    type& assign(type& another);
 };
 
 class bool_type : public type
@@ -48,9 +51,16 @@ class mutable_bool_type : public bool_type
 {
 public:
     mutable_bool_type();
-    type&& assign(type&& another);
+    type& assign(type& another);
 };
 
 class void_type : public type
 {
+};
+
+class invokeable_type : public type
+{
+public:
+    invokeable_type();
+    type& invoke();
 };

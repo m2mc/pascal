@@ -13,6 +13,7 @@
 "var"                   return T_VAR;
 "begin"                 return T_BEGIN;
 "end"                   return T_END;
+"function"              return T_FUNCTION;
 
 "if"                    return T_IF;
 "then"                  return T_THEN;

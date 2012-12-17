@@ -1,25 +1,23 @@
 #include "expression.hpp"
 
-#include <stdexcept>
-
 expression::~expression()
 {}
 
 const_expression::const_expression(type& value) : value(value)
 {}
 
-type&& const_expression::eval()
+type& const_expression::eval()
 {
-    return std::move(value);
+    return value;
 }
 
 dynamic_expression::dynamic_expression(const std::string& id, context& ctxt) :
 id(id), ctxt(ctxt)
 {}
 
-type&& dynamic_expression::eval()
+type& dynamic_expression::eval()
 {
-    return std::move(ctxt.get(id));
+    return ctxt.get(id);
 }
 
 binary_expression::binary_expression(expression& left,
@@ -28,20 +26,20 @@ binary_expression::binary_expression(expression& left,
     left(left), op(op), right(right)
 {}
 
-type&& binary_expression::eval()
+type& binary_expression::eval()
 {
     switch (op)
     {
         case '+':
-            return std::move(left.eval() + right.eval());
+            return left.eval() + right.eval();
         case '-':
-            return std::move(left.eval() - right.eval());
+            return left.eval() - right.eval();
         case '*':
-            return std::move(left.eval() * right.eval());
+            return left.eval() * right.eval();
         case '/':
-            return std::move(left.eval() / right.eval());
+            return left.eval() / right.eval();
         case '=':
-            return std::move(left.eval() == right.eval());
+            return left.eval() == right.eval();
         case 'a':
             return left.eval().assign(right.eval());
         default:
@@ -54,7 +52,7 @@ void expression_list::push_back(expression& next)
     list.push_back(std::unique_ptr<expression>(&next));
 }
 
-type&& expression_list::eval()
+type& expression_list::eval()
 {
     // need fix for double evaluation
     for (auto& next : list)
@@ -62,17 +60,34 @@ type&& expression_list::eval()
     if (!list.empty())
         return list.back()->eval();
     else
-        return std::move(*(new void_type()));
+        return *(new void_type());
+}
+
+const std::list<std::unique_ptr<expression>>& expression_list::get_list()
+{
+    return list;
 }
 
 if_expression::if_expression(expression& condition, expression& body) :
     condition(condition), body(body)
 {}
 
-type&& if_expression::eval()
+type& if_expression::eval()
 {
     if (condition.eval().to_bool())
         return body.eval();
     else
-        return std::move(*(new void_type()));
+        return *(new void_type());
+}
+
+function_invoke_expression::function_invoke_expression(const std::string& id,
+                                                       expression_list& args,
+                                                       context& ctxt) :
+    id(id), args(args), ctxt(ctxt)
+{}
+
+type& function_invoke_expression::eval()
+{
+    // process arguments
+    return ctxt.get(id).invoke();
 }
