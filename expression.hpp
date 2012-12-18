@@ -76,6 +76,7 @@ public:
                            const std::string& type_name,
                            context_manager& ctxt);
     type& eval();
+    const std::string& get_name();
 private:
     std::string name;
     std::string type_name;

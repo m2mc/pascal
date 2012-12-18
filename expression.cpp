@@ -110,6 +110,11 @@ type& var_declare_expression::eval()
     return *(new void_type());
 }
 
+const std::string& var_declare_expression::get_name()
+{
+    return name;    
+}
+
 function_invoke_expression::function_invoke_expression(const std::string& id,
                                                        expression_list& args,
                                                        context_manager& ctxt) :
@@ -118,9 +123,13 @@ function_invoke_expression::function_invoke_expression(const std::string& id,
 
 type& function_invoke_expression::eval()
 {
+    std::list<std::shared_ptr<type>> arg_values;
+    for (const auto& arg : args.get_list())
+        arg_values.push_back(std::shared_ptr<type>(&(arg->eval())));
     type& func = ctxt.get(id);
     ctxt.put_local();
-    type& result = func.invoke();
+    func.pre_invoke();
+    type& result = func.invoke(arg_values);
     ctxt.pop_local();
     return result;
 }

@@ -2,7 +2,7 @@ program hello_world;
 
 function foo : boolean
 begin
-    bar()    
+    bar(2, 1) 
 end;
 
 function bar(a, b : integer) : integer

@@ -36,7 +36,8 @@
 %type <expr> if_expression
 %type <expr> dynamic_expression explicit_function_invoke
 
-%type <expr> vardecl varsection vars_and_code 
+%type <expr> vardecl varsection vars_and_code
+%type <expr> signature_entries optional_signature_entries
 
 %%
 
@@ -56,22 +57,22 @@ function_decl:
     T_FUNCTION T_IDENTIFIER
     optional_signature_entries
     T_COL T_IDENTIFIER
-    vars_and_code
-                                            { ;
-                                              ctxt.get_global().declare(*$2, *(new invokeable_type(*$6)));
-                                            }
+    vars_and_code                           { ctxt.get_global().declare(*$2, *(new invokeable_type(*dynamic_cast<expression_list*>($3), *$6, ctxt))); }
 
 vars_and_code:
     varsection codeblock                    { $$ = $1;
                                               dynamic_cast<expression_list*>($$)->push_all(*dynamic_cast<expression_list*>($2)); }
                         
 optional_signature_entries:
-    /* empty */
-    | T_OPEN signature_entries T_CLOSE
+    /* empty */                             { $$ = new expression_list(); }
+    | T_OPEN signature_entries T_CLOSE      { $$ = $2; }
 
 signature_entries:
-    vardecl
-    | signature_entries T_COMMA vardecl
+    vardecl                                 { expression_list* list = new expression_list();
+                                              list->push_back(*$1);
+                                              $$ = list;
+                                            }
+    | signature_entries T_COMMA vardecl     { dynamic_cast<expression_list*>($$)->push_back(*$3); }
 
 varsection:
     /* empty */                             { $$ = new expression_list(); }
@@ -114,7 +115,7 @@ optional_comma_expressions:
 comma_expressions:
     expression                              { $$ = new expression_list();
                                               dynamic_cast<expression_list*>($$)->push_back(*$1); }
-    | comma_expressions T_COMMA expression        { dynamic_cast<expression_list*>($$)->push_back(*$3); }
+    | comma_expressions T_COMMA expression  { dynamic_cast<expression_list*>($$)->push_back(*$3); }
 
 expression:
     expression_30
