@@ -28,11 +28,11 @@ private:
 class dynamic_expression : public expression
 {
 public:
-    dynamic_expression(const std::string& id, context& ctxt);
+    dynamic_expression(const std::string& id, context_manager& ctxt);
     type& eval();
 protected:
     std::string id;
-    context& ctxt;
+    context_manager& ctxt;
 };
 
 class binary_expression : public expression
@@ -52,6 +52,7 @@ class expression_list : public expression
 {
 public:
     void push_back(expression& next);
+    void push_all(expression_list& next_list);
     const std::list<std::unique_ptr<expression>>& get_list();
     type& eval();
 private:
@@ -68,15 +69,28 @@ private:
     expression& body;
 };
 
+class var_declare_expression : public expression
+{
+public:
+    var_declare_expression(const std::string& name,
+                           const std::string& type_name,
+                           context_manager& ctxt);
+    type& eval();
+private:
+    std::string name;
+    std::string type_name;
+    context_manager& ctxt;
+};
+
 class function_invoke_expression : public expression
 {
 public:
     function_invoke_expression(const std::string& id,
                                expression_list& args,
-                               context& ctxt);
+                               context_manager& ctxt);
     type& eval();
 private:
     std::string id;
     expression_list& args;
-    context& ctxt;
+    context_manager& ctxt;
 };

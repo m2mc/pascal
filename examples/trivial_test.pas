@@ -2,17 +2,18 @@ program hello_world;
 
 function foo : boolean
 begin
-
+    bar()    
 end;
 
 function bar(a, b : integer) : integer
+var x : integer;
 begin
-
+    
 end;
 
-var:
-    i, j : integer;
-    a, b : boolean;
+var i, j : integer;
+var a, b : boolean;
+
 begin
     i := 2;
     i := 1 + 3;
@@ -29,5 +30,5 @@ begin
 
     end;
 
-    foo(42)
+    foo()
 end

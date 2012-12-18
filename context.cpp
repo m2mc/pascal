@@ -2,25 +2,21 @@
 
 #include <stdexcept>
 
-type& mutable_context::get(const std::string& name)
+type& context::get(const std::string& name)
 {
     return *vars.at(name);
 }
 
-void mutable_context::declare(const std::string& name, type& init_value)
+void context::declare(const std::string& name, type& init_value)
 {
     vars.insert(std::make_pair(name, std::unique_ptr<type>(&init_value)));
 }
 
-mixed_context::mixed_context(context& global) :
-    global(global)
-{}
-
-type& mixed_context::get(const std::string& name)
+type& context_manager::get(const std::string& name)
 {
     try
     {
-        return local.top()->get(name);
+        return local.top().get(name);
     }
     catch (std::exception e)
     {
@@ -28,12 +24,22 @@ type& mixed_context::get(const std::string& name)
     }
 }
 
-void mixed_context::put_local(context& next_local)
+context& context_manager::get_global()
 {
-    local.push(std::unique_ptr<context>(&next_local));
+    return global;
 }
 
-void mixed_context::pop_local()
+context& context_manager::get_local()
+{
+    return local.top();
+}
+
+void context_manager::put_local()
+{
+    local.push(context());
+}
+
+void context_manager::pop_local()
 {
     local.pop();
 }

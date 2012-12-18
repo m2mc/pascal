@@ -8,8 +8,7 @@
     extern int yylex();
     void yyerror(const char *s) { std::cerr << "Grammar error: " << std::string(s) << std::endl; }
 
-    mutable_context global;
-    mixed_context general(global);
+    context_manager ctxt;
 %}
 
 %union {
@@ -20,8 +19,6 @@
     int int_value;
 
     expression* expr;
-
-    mutable_context* ctxt;
 }
 
 %token <str_value> T_IDENTIFIER
@@ -32,7 +29,6 @@
 %token T_TRUE T_FALSE
 
 %type <str_values> id_list
-%type <declar> vardecl
 
 %type <expr> expression expression_30 expression_20 expression_10 simple_expression
 %type <expr> expressions optional_expressions codeblock expression_or_block
@@ -40,14 +36,14 @@
 %type <expr> if_expression
 %type <expr> dynamic_expression explicit_function_invoke
 
-%type <ctxt> varsection optional_varsection vardecls
+%type <expr> vardecl varsection vars_and_code 
 
 %%
 
 program:
-    header function_decls optional_varsection codeblock
-                                            { general.put_local(*$3);
-                                              $4->eval(); }
+    header function_decls vars_and_code
+                                            { ctxt.put_local();
+                                              $3->eval(); }
 
 header:
     T_PROGRAM T_IDENTIFIER T_SEMICOL
@@ -60,9 +56,15 @@ function_decl:
     T_FUNCTION T_IDENTIFIER
     optional_signature_entries
     T_COL T_IDENTIFIER
-    optional_varsection codeblock
-                                            { global.declare(*$2, *(new invokeable_type(*$6))); }
-                            
+    vars_and_code
+                                            { ;
+                                              ctxt.get_global().declare(*$2, *(new invokeable_type(*$6)));
+                                            }
+
+vars_and_code:
+    varsection codeblock                    { $$ = $1;
+                                              dynamic_cast<expression_list*>($$)->push_all(*dynamic_cast<expression_list*>($2)); }
+                        
 optional_signature_entries:
     /* empty */
     | T_OPEN signature_entries T_CLOSE
@@ -71,25 +73,19 @@ signature_entries:
     vardecl
     | signature_entries T_COMMA vardecl
 
-optional_varsection:
-    /* empty */                             { $$ = new mutable_context(); }
-    | varsection
-
 varsection:
-    T_VAR T_COL vardecls                    { $$ = $3; }
-
-vardecls:
-    /* empty */                             { $$ = new mutable_context(); }
-    | vardecls vardecl T_SEMICOL            { if ($2->second == "integer")
-                                                  for (auto& name : $2->first) $$->declare(name, *(new mutable_int_type()));
-                                              else if ($2->second == "boolean")
-                                                  for (auto& name : $2->first) $$->declare(name, *(new mutable_bool_type()));
-                                              else
-                                                  throw std::logic_error("Invalid type name: " + $2->second);
-                                            }     
+    /* empty */                             { $$ = new expression_list(); }
+    | varsection T_VAR vardecl T_SEMICOL    { dynamic_cast<expression_list*>($$)->push_back(*$3); }     
 
 vardecl:
-    id_list T_COL T_IDENTIFIER              { $$ = new std::pair<std::list<std::string>, std::string>(*$1, *$3); }
+    id_list T_COL T_IDENTIFIER              { expression_list* list = new expression_list();
+                                              for (const auto& name : *$1)
+                                              {
+                                                  expression* decl = new var_declare_expression(name, *$3, ctxt);
+                                                  list->push_back(*decl);
+                                              }
+                                              $$ = list;
+                                            }
 
 id_list:
     T_IDENTIFIER                            { $$ = new std::list<std::string>(); $$->push_back(*$1); }
@@ -149,11 +145,11 @@ simple_expression:
     | explicit_function_invoke
 
 dynamic_expression:
-    T_IDENTIFIER                            { $$ = new dynamic_expression(*$1, general); }
+    T_IDENTIFIER                            { $$ = new dynamic_expression(*$1, ctxt); }
 
 explicit_function_invoke:
     T_IDENTIFIER T_OPEN optional_comma_expressions T_CLOSE
-                                            { $$ = new function_invoke_expression(*$1, *dynamic_cast<expression_list*>($3), general); }
+                                            { $$ = new function_invoke_expression(*$1, *dynamic_cast<expression_list*>($3), ctxt); }
 
 if_expression:
     T_IF expression T_THEN expression_or_block     

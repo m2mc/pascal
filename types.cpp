@@ -1,5 +1,6 @@
 #include "types.hpp"
 
+#include "expression.hpp"
 #include <stdexcept>
 
 type& type::operator+(type& another)
@@ -113,9 +114,10 @@ type& mutable_bool_type::assign(type& another)
     return *(new void_type()); 
 }
 
-invokeable_type::invokeable_type(context& local_init) :
-    local_init(local_init)
+invokeable_type::invokeable_type(expression& body) : body(body)
 {}
 
 type& invokeable_type::invoke()
-{}
+{
+    return body.eval();
+}

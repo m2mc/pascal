@@ -2,7 +2,7 @@
 
 #include <list>
 
-class context;
+class expression;
 
 class type
 {
@@ -63,8 +63,8 @@ class void_type : public type
 class invokeable_type : public type
 {
 public:
-    invokeable_type(context& local_init);
+    invokeable_type(expression& body);
     type& invoke();
 private:
-    context& local_init;
+    expression& body;
 };
