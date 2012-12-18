@@ -23,17 +23,19 @@
 
 %token <str_value> T_IDENTIFIER
 %token <int_value> T_INTEGER
+%token <str_value> T_STR_LITERAL
 %token T_PROGRAM T_VAR T_BEGIN T_END T_FUNCTION
 %token T_ASSIGN T_PLUS T_MINUS T_STAR T_SLASH T_OPEN T_CLOSE T_SEMICOL T_COL T_COMMA T_EQ
-%token T_IF T_THEN T_ELSE
-%token T_TRUE T_FALSE
+%token T_GREATER T_LESS T_LEFT_SQ T_RIGHT_SQ
+%token T_IF T_THEN T_ELSE T_WHILE T_DO
+%token T_TRUE T_FALSE T_NOT
 
 %type <str_values> id_list
 
-%type <expr> expression expression_30 expression_20 expression_10 simple_expression
+%type <expr> expression expression_30 expression_20 expression_10 expression_5 expression_3 simple_expression
 %type <expr> expressions optional_expressions codeblock expression_or_block
 %type <expr> comma_expressions optional_comma_expressions
-%type <expr> if_expression
+%type <expr> if_expression while_expression
 %type <expr> dynamic_expression explicit_function_invoke
 
 %type <expr> vardecl varsection vars_and_code
@@ -96,7 +98,7 @@ codeblock:
     T_BEGIN optional_expressions T_END      { $$ = $2; }
 
 expression_or_block:
-    expression T_SEMICOL
+    expression
     | codeblock
 
 optional_expressions:
@@ -120,11 +122,14 @@ comma_expressions:
 expression:
     expression_30
     | if_expression
+    | while_expression
 
 expression_30:
     expression_20
     | expression_30 T_ASSIGN expression_20  { $$ = new binary_expression(*$1, 'a', *$3); }
     | expression_30 T_EQ expression_20      { $$ = new binary_expression(*$1, '=', *$3); }
+    | expression_30 T_GREATER expression_20 { $$ = new binary_expression(*$1, '>', *$3); }
+    | expression_30 T_LESS expression_20    { $$ = new binary_expression(*$1, '<', *$3); }
 
 expression_20:
     expression_10
@@ -132,15 +137,25 @@ expression_20:
     | expression_20 T_MINUS expression_10   { $$ = new binary_expression(*$1, '-', *$3); }
 
 expression_10:
-    simple_expression
-    | expression_10 T_STAR simple_expression
+    expression_5
+    | expression_10 T_STAR expression_5
                                             { $$ = new binary_expression(*$1, '*', *$3); }
-    | expression_10 T_SLASH simple_expression
+    | expression_10 T_SLASH expression_5
                                             { $$ = new binary_expression(*$1, '/', *$3); }
+expression_5:
+    expression_3
+    | T_NOT expression_5                    { $$ = new unary_expression('~', *$2); }
+
+expression_3:
+    simple_expression
+    | expression_3 T_LEFT_SQ expression T_RIGHT_SQ
+                                            { $$ = new binary_expression(*$1, '[', *$3); }
+                                            
 simple_expression:
     T_INTEGER                               { $$ = new const_expression(*(new int_type($1))); }
     | T_TRUE                                { $$ = new const_expression(*(new bool_type(true))); }
     | T_FALSE                               { $$ = new const_expression(*(new bool_type(false))); }
+    | T_STR_LITERAL                         { $$ = new const_expression(*(new string_type(*$1))); }
     | T_OPEN expression T_CLOSE             { $$ = $2; }
     | dynamic_expression
     | explicit_function_invoke
@@ -153,10 +168,15 @@ explicit_function_invoke:
                                             { $$ = new function_invoke_expression(*$1, *dynamic_cast<expression_list*>($3), ctxt); }
 
 if_expression:
-    T_IF expression T_THEN expression_or_block     
+    T_IF expression T_THEN codeblock     
                                             { $$ = new if_expression(*$2, *$4); }
-    | T_IF expression T_THEN expression_or_block
+    | T_IF expression T_THEN codeblock
     T_ELSE expression_or_block              { $$ = new if_expression(*$2, *$4, *$6); }
+
+while_expression:
+    T_WHILE expression T_DO expression_or_block 
+                                            { $$ = new while_expression(*$2, *$4); }
+
 %%
 
 int main(int argc, char** argv)

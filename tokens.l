@@ -7,6 +7,8 @@
 
 %%
 
+"\".\""                 yylval.str_value = new std::string(yytext, 1, strlen(yytext) - 2); return T_STR_LITERAL;
+
 [ \t\n]                 /* whitespace */
 
 "program"               return T_PROGRAM;
@@ -18,9 +20,12 @@
 "if"                    return T_IF;
 "then"                  return T_THEN;
 "else"                  return T_ELSE;
+"while"                 return T_WHILE;
+"do"                    return T_DO;
 
 "true"                  return T_TRUE;
 "false"                 return T_FALSE;
+"not"                   return T_NOT;
 
 ":="                    return T_ASSIGN;
 "+"                     return T_PLUS;
@@ -33,6 +38,10 @@
 ":"                     return T_COL;
 ","                     return T_COMMA;
 "="                     return T_EQ;
+">"                     return T_GREATER;
+"<"                     return T_LESS;
+"["                     return T_LEFT_SQ;
+"]"                     return T_RIGHT_SQ;
 
 [a-zA-Z_][a-zA-z_0-9]*  yylval.str_value = new std::string(yytext); return T_IDENTIFIER;
 [0-9]+                  yylval.int_value = std::stoi(yytext); return T_INTEGER;

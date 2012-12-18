@@ -8,7 +8,8 @@ end;
 function bar(a, b : integer) : integer
 var x : integer;
 begin
-    
+    x := 100000;
+    while x > 0 do x := x - 1 - 2
 end;
 
 var i, j : integer;

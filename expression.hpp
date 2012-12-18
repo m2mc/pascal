@@ -48,6 +48,17 @@ private:
     expression& right;
 };
 
+class unary_expression : public expression
+{
+public:
+    unary_expression(char op,
+                     expression& expr);
+    type& eval();
+private:
+    char op;
+    expression& expr;
+};
+
 class expression_list : public expression
 {
 public:
@@ -70,6 +81,17 @@ private:
     expression& condition;
     expression& body;
     expression& otherwise;
+};
+
+class while_expression : public expression
+{
+public:
+    while_expression(expression& condition,
+                     expression& body);
+    type& eval();
+private:
+    expression& condition;
+    expression& body;
 };
 
 class var_declare_expression : public expression

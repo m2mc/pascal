@@ -4,6 +4,21 @@
 #include "context.hpp"
 #include <stdexcept>
 
+type& value_of(int value)
+{
+    return *(new int_type(value));
+}
+
+type& value_of(bool value)
+{
+    return *(new bool_type(value));
+}
+
+type& value_of(const std::string& value)
+{
+    return *(new string_type(value));
+}
+
 type& type::operator+(type& another)
 {
     throw std::logic_error("Operator + is not applicable");
@@ -29,9 +44,29 @@ type& type::operator==(type& another)
     throw std::logic_error("Operator = is not applicable");
 }
 
+type& type::operator>(type& another)
+{
+    throw std::logic_error("Operator > is not applicable");
+}
+
+type& type::operator<(type& another)
+{
+    throw std::logic_error("Operator < is not applicable");
+}
+
+type& type::operator~()
+{
+    throw std::logic_error("Operator ~ is not applicable");
+}
+
 type& type::assign(type& another)
 {
     throw std::logic_error("Cannot perform assignment");
+}
+
+type& type::at(type& index)
+{
+    throw std::logic_error("Cannot access as an array");
 }
 
 int type::to_int()
@@ -42,6 +77,11 @@ int type::to_int()
 bool type::to_bool()
 {
     throw std::logic_error("Not boolean type");
+}
+
+const std::string& type::to_string()
+{
+    throw std::logic_error("Not string type");
 }
 
 type& type::invoke(const std::list<std::shared_ptr<type>>& arg_values)
@@ -97,6 +137,18 @@ type& int_type::operator==(type& another)
     return *(new bool_type(value == casted.value));
 }
 
+type& int_type::operator>(type& another)
+{
+    int_type& casted = dynamic_cast<int_type&>(another);
+    return *(new bool_type(value > casted.value));
+}
+
+type& int_type::operator<(type& another)
+{
+    int_type& casted = dynamic_cast<int_type&>(another);
+    return *(new bool_type(value < casted.value));
+}
+
 mutable_int_type::mutable_int_type() : int_type(0)
 {}
 
@@ -115,6 +167,11 @@ bool bool_type::to_bool()
     return value;
 }
 
+type& bool_type::operator~()
+{
+    return *(new bool_type(!value));
+}
+
 mutable_bool_type::mutable_bool_type() : bool_type(false)
 {}
 
@@ -123,6 +180,34 @@ type& mutable_bool_type::assign(type& another)
     bool_type& casted = dynamic_cast<bool_type&>(another);
     value = casted.value;
     return *(new void_type()); 
+}
+
+string_type::string_type(const std::string& value) :
+    value(value)
+{}
+
+const std::string& string_type::to_string()
+{
+    return value;
+}
+
+mutable_string_type::mutable_string_type() : string_type("")
+{}
+
+type& mutable_string_type::assign(type& another)
+{
+    string_type& casted = dynamic_cast<string_type&>(another);
+    value = casted.value;
+    return *(new void_type());
+}
+
+array_type::array_type(const std::vector<std::unique_ptr<type>>& value) :
+    value(value)
+{}
+
+type& array_type::at(type& index)
+{
+    return *value.at(index.to_int());
 }
 
 invokeable_type::invokeable_type(expression_list& arguments, expression& body, context_manager& ctxt) :
@@ -158,4 +243,57 @@ type& invokeable_type::invoke(const std::list<std::shared_ptr<type>>& arg_values
 void invokeable_type::pre_invoke()
 {
     arguments.eval();
+}
+
+template <typename Functor>
+native_invokeable_type<Functor>::native_invokeable_type(Functor call) :
+    call(call)
+{}
+
+template <typename Functor>
+void native_invokeable_type<Functor>::pre_invoke()
+{}
+
+template <typename Functor>
+type& native_invokeable_type_<Functor>::invoke(const std::list<std::shared_ptr<type>>& arg_values)
+{
+    if (arg_values.size() == 0)
+    {
+        return value_of(this.call());
+    }
+    else
+    {
+        throw std::logic_error("Zero arguments expected");
+    }
+}
+
+// template <typename Functor>
+// type& native_invokeable_type_i<Functor>::native_invokeable_type_i(Functor call)
+//     : native_invokeable_type<Functor>(call)
+// {}
+
+template <typename Functor>
+type& native_invokeable_type_i<Functor>::invoke(const std::list<std::shared_ptr<type>>& arg_values)
+{
+    if (arg_values.size() == 1)
+    {
+        return value_of(this.call(arg_values.front()->to_int()));
+    }
+    else
+    {
+        throw std::logic_error("Zero arguments expected");
+    }
+}
+
+template <typename Functor>
+type& native_invokeable_type_ii<Functor>::invoke(const std::list<std::shared_ptr<type>>& arg_values)
+{
+    if (arg_values.size() == 2)
+    {
+        return value_of(this.call(arg_values.front()->to_int(), arg_values.back()->to_int()));
+    }
+    else
+    {
+        throw std::logic_error("Zero arguments expected");
+    }
 }

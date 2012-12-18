@@ -17,5 +17,5 @@ begin
 end;
 
 begin
-    fib(30)
+    fib(20)
 end

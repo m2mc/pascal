@@ -42,6 +42,27 @@ type& binary_expression::eval()
             return left.eval() == right.eval();
         case 'a':
             return left.eval().assign(right.eval());
+        case '>':
+            return left.eval() > right.eval();
+        case '<':
+            return left.eval() < right.eval();
+        case '[':
+            return left.eval().at(right.eval());
+        default:
+            throw std::invalid_argument("Unimplemented operator: " + std::string(&op, 1));
+    }
+}
+
+unary_expression::unary_expression(char op, expression& expr) :
+    op(op), expr(expr)
+{}
+
+type& unary_expression::eval()
+{
+    switch(op)
+    {
+        case '~':
+            return ~expr.eval();
         default:
             throw std::invalid_argument("Unimplemented operator: " + std::string(&op, 1));
     }
@@ -95,6 +116,18 @@ type& if_expression::eval()
         return otherwise.eval();
 }
 
+while_expression::while_expression(expression& condition,
+                                   expression& body) :
+    condition(condition), body(body)
+{}
+
+type& while_expression::eval()
+{
+    while (condition.eval().to_bool())
+        body.eval();
+    return *(new void_type());
+}
+
 var_declare_expression::var_declare_expression(const std::string& name,
                                                const std::string& type_name,
                                                context_manager& ctxt) :
@@ -107,6 +140,8 @@ type& var_declare_expression::eval()
         ctxt.get_local().declare(name, *(new mutable_int_type()));
     else if (type_name == "boolean")
         ctxt.get_local().declare(name, *(new mutable_bool_type()));
+    else if (type_name == "string")
+        ctxt.get_local().declare(name, *(new mutable_string_type()));
     else
         throw std::logic_error("Invalid type name: " + type_name);
     return *(new void_type());

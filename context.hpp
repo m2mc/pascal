@@ -19,6 +19,7 @@ private:
 class context_manager
 {
 public:
+    context_manager();
     virtual type& get(const std::string& name);
 
     context& get_global();
