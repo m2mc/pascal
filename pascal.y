@@ -25,7 +25,7 @@
 %token <int_value> T_INTEGER
 %token T_PROGRAM T_VAR T_BEGIN T_END T_FUNCTION
 %token T_ASSIGN T_PLUS T_MINUS T_STAR T_SLASH T_OPEN T_CLOSE T_SEMICOL T_COL T_COMMA T_EQ
-%token T_IF T_THEN
+%token T_IF T_THEN T_ELSE
 %token T_TRUE T_FALSE
 
 %type <str_values> id_list
@@ -155,7 +155,8 @@ explicit_function_invoke:
 if_expression:
     T_IF expression T_THEN expression_or_block     
                                             { $$ = new if_expression(*$2, *$4); }
-
+    | T_IF expression T_THEN expression_or_block
+    T_ELSE expression_or_block              { $$ = new if_expression(*$2, *$4, *$6); }
 %%
 
 int main(int argc, char** argv)

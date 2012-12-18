@@ -62,11 +62,14 @@ private:
 class if_expression : public expression
 {
 public:
-    if_expression(expression& condition, expression& body);
+    if_expression(expression& condition,
+                  expression& body,
+                  expression& otherwise = *(new const_expression(*(new void_type()))));
     type& eval();
 private:
     expression& condition;
     expression& body;
+    expression& otherwise;
 };
 
 class var_declare_expression : public expression

@@ -81,8 +81,10 @@ const std::list<std::unique_ptr<expression>>& expression_list::get_list()
     return list;
 }
 
-if_expression::if_expression(expression& condition, expression& body) :
-    condition(condition), body(body)
+if_expression::if_expression(expression& condition,
+                             expression& body,
+                             expression& otherwise) :
+    condition(condition), body(body), otherwise(otherwise)
 {}
 
 type& if_expression::eval()
@@ -90,7 +92,7 @@ type& if_expression::eval()
     if (condition.eval().to_bool())
         return body.eval();
     else
-        return *(new void_type());
+        return otherwise.eval();
 }
 
 var_declare_expression::var_declare_expression(const std::string& name,

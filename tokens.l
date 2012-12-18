@@ -17,6 +17,7 @@
 
 "if"                    return T_IF;
 "then"                  return T_THEN;
+"else"                  return T_ELSE;
 
 "true"                  return T_TRUE;
 "false"                 return T_FALSE;
