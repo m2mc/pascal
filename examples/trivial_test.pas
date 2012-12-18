@@ -12,6 +12,11 @@ begin
     while x > 0 do x := x - 1 - 2
 end;
 
+function inc(a : integer) : void
+begin
+    a := a + 1
+end;
+
 var i, j : integer;
 var a, b : boolean;
 
@@ -31,5 +36,9 @@ begin
 
     end;
 
-    foo()
+    foo();
+    i := 5;
+    write(i);
+    inc(i);
+    write(i)
 end

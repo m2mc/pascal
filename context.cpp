@@ -1,7 +1,7 @@
 #include "context.hpp"
 
 #include <stdexcept>
-#include <cmath>
+#include <iostream>
 
 type& context::get(const std::string& name)
 {
@@ -13,10 +13,15 @@ void context::declare(const std::string& name, type& init_value)
     vars.insert(std::make_pair(name, std::unique_ptr<type>(&init_value)));
 }
 
+int native_write(int value)
+{
+    std::cout << value << std::endl;
+    return 42;
+}
+
 context_manager::context_manager()
 {
-    // global.declare("abs", *(new native_invokeable_type_i<int*(int)>(&abs)));
-    // global.declare("sin", *(new native_invokeable_type_1<double*(double)>(sin)));
+    global.declare("write", *(new native_invokeable_type<int, int>(native_write)));
 }
 
 type& context_manager::get(const std::string& name)

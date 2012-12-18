@@ -16,6 +16,7 @@
 "begin"                 return T_BEGIN;
 "end"                   return T_END;
 "function"              return T_FUNCTION;
+"array"                 return T_ARRAY;
 
 "if"                    return T_IF;
 "then"                  return T_THEN;

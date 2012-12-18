@@ -79,6 +79,11 @@ bool type::to_bool()
     throw std::logic_error("Not boolean type");
 }
 
+type::operator int()
+{
+    return to_int();
+}
+
 const std::string& type::to_string()
 {
     throw std::logic_error("Not string type");
@@ -243,57 +248,4 @@ type& invokeable_type::invoke(const std::list<std::shared_ptr<type>>& arg_values
 void invokeable_type::pre_invoke()
 {
     arguments.eval();
-}
-
-template <typename Functor>
-native_invokeable_type<Functor>::native_invokeable_type(Functor call) :
-    call(call)
-{}
-
-template <typename Functor>
-void native_invokeable_type<Functor>::pre_invoke()
-{}
-
-template <typename Functor>
-type& native_invokeable_type_<Functor>::invoke(const std::list<std::shared_ptr<type>>& arg_values)
-{
-    if (arg_values.size() == 0)
-    {
-        return value_of(this.call());
-    }
-    else
-    {
-        throw std::logic_error("Zero arguments expected");
-    }
-}
-
-// template <typename Functor>
-// type& native_invokeable_type_i<Functor>::native_invokeable_type_i(Functor call)
-//     : native_invokeable_type<Functor>(call)
-// {}
-
-template <typename Functor>
-type& native_invokeable_type_i<Functor>::invoke(const std::list<std::shared_ptr<type>>& arg_values)
-{
-    if (arg_values.size() == 1)
-    {
-        return value_of(this.call(arg_values.front()->to_int()));
-    }
-    else
-    {
-        throw std::logic_error("Zero arguments expected");
-    }
-}
-
-template <typename Functor>
-type& native_invokeable_type_ii<Functor>::invoke(const std::list<std::shared_ptr<type>>& arg_values)
-{
-    if (arg_values.size() == 2)
-    {
-        return value_of(this.call(arg_values.front()->to_int(), arg_values.back()->to_int()));
-    }
-    else
-    {
-        throw std::logic_error("Zero arguments expected");
-    }
 }

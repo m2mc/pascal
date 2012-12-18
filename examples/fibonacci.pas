@@ -17,5 +17,5 @@ begin
 end;
 
 begin
-    fib(20)
+    write(fib(25))
 end

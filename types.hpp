@@ -25,6 +25,9 @@ public:
 
     virtual int to_int();
     virtual bool to_bool();
+
+    virtual operator int();
+
     virtual const std::string& to_string();
 
     virtual type& invoke(const std::list<std::shared_ptr<type>>& arg_values);
@@ -120,34 +123,15 @@ private:
     context_manager& ctxt;
 };
 
-template <typename Functor>
+template <typename Return, typename ... Params>
 class native_invokeable_type : public type
 {
 public:
-    native_invokeable_type(Functor call);
+    native_invokeable_type(std::function<Return(Params ...)> call);
     void pre_invoke();
+    type& invoke(const std::list<std::shared_ptr<type>>& arg_values);
 protected:
-    Functor call;
+    std::function<Return(Params ...)> call;
 };
 
-template <typename Functor>
-class native_invokeable_type_ : public native_invokeable_type<Functor>
-{
-public:
-    type& invoke(const std::list<std::shared_ptr<type>>& arg_values);
-};
-
-template <typename Functor>
-class native_invokeable_type_i : public native_invokeable_type<Functor>
-{
-public:
-    native_invokeable_type_i(Functor call);
-    type& invoke(const std::list<std::shared_ptr<type>>& arg_values);
-};
-
-template <typename Functor>
-class native_invokeable_type_ii : public native_invokeable_type<Functor>
-{
-public:
-    type& invoke(const std::list<std::shared_ptr<type>>& arg_values);
-};      
+#include "types.inl"
