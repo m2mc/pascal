@@ -31,7 +31,7 @@ void native_write(int value)
 
 context_manager::context_manager()
 {
-    // global.declare("write", std::shared_ptr<type>(new native_invokeable_type<void, int>(native_write)));
+    global.declare("write", std::shared_ptr<type>(new native_invokeable_type<void, int>(native_write)));
 }
 
 std::shared_ptr<type> context_manager::get(const std::string& name)
@@ -63,7 +63,6 @@ void context_manager::put_local()
 
 void context_manager::pop_local()
 {
-    // std::cout << "popping local" << std::endl;
     local.pop();
 }
 

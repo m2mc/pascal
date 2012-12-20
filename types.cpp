@@ -259,8 +259,8 @@ std::shared_ptr<type> invokeable_type::invoke(const std::list<std::shared_ptr<ty
     return body.eval();
 }
 
-// template <>
-// std::shared_ptr<type> invoke_function(std::function<void()> call, const std::list<std::shared_ptr<type>>& arg_values)
-// {
-//     call();
-// }
+template <>
+std::shared_ptr<type> invoke_function(std::function<void()> call, const std::list<std::shared_ptr<type>>& arg_values)
+{
+    call();
+}

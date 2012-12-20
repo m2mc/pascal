@@ -126,15 +126,14 @@ private:
     context_manager& ctxt;
 };
 
-// template <typename Return, typename ... Params>
-// class native_invokeable_type : public type
-// {
-// public:
-//     native_invokeable_type(std::function<Return(Params ...)> call);
-//     void pre_invoke();
-//     std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
-// protected:
-//     std::function<Return(Params ...)> call;
-// };
+template <typename Return, typename ... Params>
+class native_invokeable_type : public type
+{
+public:
+    native_invokeable_type(std::function<Return(Params ...)> call);
+    std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
+protected:
+    std::function<Return(Params ...)> call;
+};
 
 #include "types.inl"
