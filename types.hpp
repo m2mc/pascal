@@ -4,54 +4,55 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 class expression;
 class expression_list;
+class var_declare_expression;
 class context_manager;
 
 class type
 {
 public:
-    virtual type& operator+(type& another);
-    virtual type& operator-(type& another);
-    virtual type& operator*(type& another);
-    virtual type& operator/(type& another);
-    virtual type& operator==(type& another);
-    virtual type& operator>(type& another);
-    virtual type& operator<(type& another);
-    virtual type& operator~();
-    virtual type& assign(type& another);
-    virtual type& at(type& index);
+    virtual std::shared_ptr<type> operator+(type& another);
+    virtual std::shared_ptr<type> operator-(type& another);
+    virtual std::shared_ptr<type> operator*(type& another);
+    virtual std::shared_ptr<type> operator/(type& another);
+    virtual std::shared_ptr<type> operator==(type& another);
+    virtual std::shared_ptr<type> operator>(type& another);
+    virtual std::shared_ptr<type> operator<(type& another);
+    virtual std::shared_ptr<type> operator~();
+    virtual std::shared_ptr<type> assign(type& another);
+    virtual std::shared_ptr<type> at(type& index);
+
+    virtual bool is_mutable();
 
     virtual int to_int();
     virtual bool to_bool();
+    virtual const std::string& to_string();
 
     virtual operator int();
 
-    virtual const std::string& to_string();
-
-    virtual type& invoke(const std::list<std::shared_ptr<type>>& arg_values);
-    virtual type& invoke();
-    virtual void pre_invoke();
+    virtual std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
 };
 
 
-type& value_of(int value);
-type& value_of(bool value);
-type& value_of(const std::string& value);
+std::shared_ptr<type> value_of(int value);
+std::shared_ptr<type> value_of(bool value);
+std::shared_ptr<type> value_of(const std::string& value);
 
 class int_type : public type
 {
 public:
     int_type(int value);
     int to_int();
-    type& operator+(type& another);
-    type& operator-(type& another);
-    type& operator*(type& another);
-    type& operator/(type& another);
-    type& operator==(type& another);
-    type& operator>(type& another);
-    type& operator<(type& another);
+    std::shared_ptr<type> operator+(type& another);
+    std::shared_ptr<type> operator-(type& another);
+    std::shared_ptr<type> operator*(type& another);
+    std::shared_ptr<type> operator/(type& another);
+    std::shared_ptr<type> operator==(type& another);
+    std::shared_ptr<type> operator>(type& another);
+    std::shared_ptr<type> operator<(type& another);
 // protected:
     int value;
 };
@@ -60,7 +61,8 @@ class mutable_int_type : public int_type
 {
 public:
     mutable_int_type();
-    type& assign(type& another);
+    std::shared_ptr<type> assign(type& another);
+    bool is_mutable();
 };
 
 class bool_type : public type
@@ -69,7 +71,7 @@ public:
     bool_type(bool value);
     bool to_bool();
 
-    type& operator~();
+    std::shared_ptr<type> operator~();
 // protected:
     bool value;
 };
@@ -78,7 +80,8 @@ class mutable_bool_type : public bool_type
 {
 public:
     mutable_bool_type();
-    type& assign(type& another);
+    std::shared_ptr<type> assign(type& another);
+    bool is_mutable();
 };
 
 class string_type : public type
@@ -94,44 +97,44 @@ class mutable_string_type : public string_type
 {
 public:
     mutable_string_type();
-    type& assign(type& another);
+    std::shared_ptr<type> assign(type& another);
+    bool is_mutable();
 };
 
 class void_type : public type
 {
 };
 
-class array_type : public type
-{
-public:
-    array_type(const std::vector<std::unique_ptr<type>>& value);
-    type& at(type& index);
-private:
-    const std::vector<std::unique_ptr<type>>& value;
-};
+// class array_type : public type
+// {
+// public:
+//     array_type(const std::vector<std::unique_ptr<type>>& value);
+//     std::shared_ptr<type> at(type& index);
+// private:
+//     const std::vector<std::unique_ptr<type>>& value;
+// };
 
 class invokeable_type : public type
 {
 public:
     invokeable_type(expression_list& arguments, expression& body, context_manager& ctxt);
-    type& invoke(const std::list<std::shared_ptr<type>>& arg_values);
-    void pre_invoke();
+    std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
 private:
     expression& arguments;
     expression& body;
-    std::list<std::string> signature;
+    std::list<std::shared_ptr<var_declare_expression>> signature;
     context_manager& ctxt;
 };
 
-template <typename Return, typename ... Params>
-class native_invokeable_type : public type
-{
-public:
-    native_invokeable_type(std::function<Return(Params ...)> call);
-    void pre_invoke();
-    type& invoke(const std::list<std::shared_ptr<type>>& arg_values);
-protected:
-    std::function<Return(Params ...)> call;
-};
+// template <typename Return, typename ... Params>
+// class native_invokeable_type : public type
+// {
+// public:
+//     native_invokeable_type(std::function<Return(Params ...)> call);
+//     void pre_invoke();
+//     std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
+// protected:
+//     std::function<Return(Params ...)> call;
+// };
 
 #include "types.inl"

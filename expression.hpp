@@ -13,23 +13,23 @@ class expression
 {
 public:
     virtual ~expression();
-    virtual type& eval() = 0;
+    virtual std::shared_ptr<type> eval() = 0;
 };
 
 class const_expression : public expression
 {
 public:
-    const_expression(type& value);
-    type& eval();
+    const_expression(std::shared_ptr<type> value);
+    std::shared_ptr<type> eval();
 private:
-    type& value;
+    std::shared_ptr<type> value;
 };
 
 class dynamic_expression : public expression
 {
 public:
     dynamic_expression(const std::string& id, context_manager& ctxt);
-    type& eval();
+    std::shared_ptr<type> eval();
 protected:
     std::string id;
     context_manager& ctxt;
@@ -41,7 +41,7 @@ public:
     binary_expression(expression& left,
                       char op,
                       expression& right);
-    type& eval();
+    std::shared_ptr<type> eval();
 private:
     expression& left;
     char op;
@@ -53,7 +53,7 @@ class unary_expression : public expression
 public:
     unary_expression(char op,
                      expression& expr);
-    type& eval();
+    std::shared_ptr<type> eval();
 private:
     char op;
     expression& expr;
@@ -64,10 +64,10 @@ class expression_list : public expression
 public:
     void push_back(expression& next);
     void push_all(expression_list& next_list);
-    const std::list<std::unique_ptr<expression>>& get_list();
-    type& eval();
+    const std::list<std::shared_ptr<expression>>& get_list();
+    std::shared_ptr<type> eval();
 private:
-    std::list<std::unique_ptr<expression>> list;
+    std::list<std::shared_ptr<expression>> list;
 };
 
 class if_expression : public expression
@@ -75,8 +75,8 @@ class if_expression : public expression
 public:
     if_expression(expression& condition,
                   expression& body,
-                  expression& otherwise = *(new const_expression(*(new void_type()))));
-    type& eval();
+                  expression& otherwise = *(new const_expression(std::shared_ptr<type>(new void_type()))));
+    std::shared_ptr<type> eval();
 private:
     expression& condition;
     expression& body;
@@ -88,7 +88,7 @@ class while_expression : public expression
 public:
     while_expression(expression& condition,
                      expression& body);
-    type& eval();
+    std::shared_ptr<type> eval();
 private:
     expression& condition;
     expression& body;
@@ -98,13 +98,13 @@ class var_declare_expression : public expression
 {
 public:
     var_declare_expression(const std::string& name,
-                           const std::string& type_name,
+                           expression& type_decl,
                            context_manager& ctxt);
-    type& eval();
+    std::shared_ptr<type> eval();
     const std::string& get_name();
 private:
     std::string name;
-    std::string type_name;
+    expression& type_decl;
     context_manager& ctxt;
 };
 
@@ -114,9 +114,18 @@ public:
     function_invoke_expression(const std::string& id,
                                expression_list& args,
                                context_manager& ctxt);
-    type& eval();
+    std::shared_ptr<type> eval();
 private:
     std::string id;
     expression_list& args;
     context_manager& ctxt;
+};
+
+class primitive_type_expression : public expression
+{
+public:
+    primitive_type_expression(const std::string& type_name);
+    std::shared_ptr<type> eval();
+private:
+    std::string type_name;
 };

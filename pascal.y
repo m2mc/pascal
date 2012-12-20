@@ -39,6 +39,7 @@
 %type <expr> dynamic_expression explicit_function_invoke
 
 %type <expr> vardecl varsection vars_and_code
+%type <expr> type_expression
 %type <expr> signature_entries optional_signature_entries
 
 %%
@@ -59,7 +60,7 @@ function_decl:
     T_FUNCTION T_IDENTIFIER
     optional_signature_entries
     T_COL T_IDENTIFIER
-    vars_and_code                           { ctxt.get_global().declare(*$2, *(new invokeable_type(*dynamic_cast<expression_list*>($3), *$6, ctxt))); }
+    vars_and_code                           { ctxt.get_global().declare(*$2, std::shared_ptr<type>(new invokeable_type(*dynamic_cast<expression_list*>($3), *$6, ctxt))); }
 
 vars_and_code:
     varsection codeblock                    { $$ = $1;
@@ -81,7 +82,7 @@ varsection:
     | varsection T_VAR vardecl T_SEMICOL    { dynamic_cast<expression_list*>($$)->push_back(*$3); }     
 
 vardecl:
-    id_list T_COL T_IDENTIFIER              { expression_list* list = new expression_list();
+    id_list T_COL type_expression           { expression_list* list = new expression_list();
                                               for (const auto& name : *$1)
                                               {
                                                   expression* decl = new var_declare_expression(name, *$3, ctxt);
@@ -89,6 +90,9 @@ vardecl:
                                               }
                                               $$ = list;
                                             }
+
+type_expression:
+    T_IDENTIFIER                            { $$ = new primitive_type_expression(*$1); }
 
 id_list:
     T_IDENTIFIER                            { $$ = new std::list<std::string>(); $$->push_back(*$1); }
@@ -152,10 +156,10 @@ expression_3:
                                             { $$ = new binary_expression(*$1, '[', *$3); }
                                             
 simple_expression:
-    T_INTEGER                               { $$ = new const_expression(*(new int_type($1))); }
-    | T_TRUE                                { $$ = new const_expression(*(new bool_type(true))); }
-    | T_FALSE                               { $$ = new const_expression(*(new bool_type(false))); }
-    | T_STR_LITERAL                         { $$ = new const_expression(*(new string_type(*$1))); }
+    T_INTEGER                               { $$ = new const_expression(std::shared_ptr<type>(new int_type($1))); }
+    | T_TRUE                                { $$ = new const_expression(std::shared_ptr<type>(new bool_type(true))); }
+    | T_FALSE                               { $$ = new const_expression(std::shared_ptr<type>(new bool_type(false))); }
+    | T_STR_LITERAL                         { $$ = new const_expression(std::shared_ptr<type>(new string_type(*$1))); }
     | T_OPEN expression T_CLOSE             { $$ = $2; }
     | dynamic_expression
     | explicit_function_invoke

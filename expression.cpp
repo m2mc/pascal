@@ -3,10 +3,10 @@
 expression::~expression()
 {}
 
-const_expression::const_expression(type& value) : value(value)
+const_expression::const_expression(std::shared_ptr<type> value) : value(value)
 {}
 
-type& const_expression::eval()
+std::shared_ptr<type> const_expression::eval()
 {
     return value;
 }
@@ -15,7 +15,7 @@ dynamic_expression::dynamic_expression(const std::string& id, context_manager& c
 id(id), ctxt(ctxt)
 {}
 
-type& dynamic_expression::eval()
+std::shared_ptr<type> dynamic_expression::eval()
 {
     return ctxt.get(id);
 }
@@ -26,28 +26,28 @@ binary_expression::binary_expression(expression& left,
     left(left), op(op), right(right)
 {}
 
-type& binary_expression::eval()
+std::shared_ptr<type> binary_expression::eval()
 {
     switch (op)
     {
         case '+':
-            return left.eval() + right.eval();
+            return *left.eval() + *right.eval();
         case '-':
-            return left.eval() - right.eval();
+            return *left.eval() - *right.eval();
         case '*':
-            return left.eval() * right.eval();
+            return *left.eval() * *right.eval();
         case '/':
-            return left.eval() / right.eval();
+            return *left.eval() / *right.eval();
         case '=':
-            return left.eval() == right.eval();
+            return *left.eval() == *right.eval();
         case 'a':
-            return left.eval().assign(right.eval());
+            return left.eval()->assign(*right.eval());
         case '>':
-            return left.eval() > right.eval();
+            return *left.eval() > *right.eval();
         case '<':
-            return left.eval() < right.eval();
+            return *left.eval() < *right.eval();
         case '[':
-            return left.eval().at(right.eval());
+            return left.eval()->at(*right.eval());
         default:
             throw std::invalid_argument("Unimplemented operator: " + std::string(&op, 1));
     }
@@ -57,12 +57,12 @@ unary_expression::unary_expression(char op, expression& expr) :
     op(op), expr(expr)
 {}
 
-type& unary_expression::eval()
+std::shared_ptr<type> unary_expression::eval()
 {
     switch(op)
     {
         case '~':
-            return ~expr.eval();
+            return ~*expr.eval();
         default:
             throw std::invalid_argument("Unimplemented operator: " + std::string(&op, 1));
     }
@@ -70,34 +70,34 @@ type& unary_expression::eval()
 
 void expression_list::push_back(expression& next)
 {
-    list.push_back(std::unique_ptr<expression>(&next));
+    list.push_back(std::shared_ptr<expression>(&next));
 }
 
 void expression_list::push_all(expression_list& next_list)
 {
     //use splice!
-    while (!next_list.list.empty())
-    {
-        std::unique_ptr<expression> next_expr
-            = std::move(next_list.list.front());
-        list.push_back(std::move(next_expr));
-        next_list.list.pop_front();
-    }
+    // while (!next_list.list.empty())
+    // {
+    //     std::unique_ptr<expression> next_expr
+    //         = std::move(next_list.list.front());
+    //     list.push_back(std::move(next_expr));
+    //     next_list.list.pop_front();
+    // }
+    list.merge(next_list.list);
 }
 
-type& expression_list::eval()
+std::shared_ptr<type> expression_list::eval()
 {
-    // need fix for double evaluation
-    type* ret = nullptr;
+    std::shared_ptr<type> ret;
     for (auto& next : list)
-        ret = &(next->eval());
+        ret = next->eval();
     if (ret != nullptr)
-        return *ret;
+        return ret;
     else
-        return *(new void_type());
+        return std::shared_ptr<type>(new void_type());
 }
 
-const std::list<std::unique_ptr<expression>>& expression_list::get_list()
+const std::list<std::shared_ptr<expression>>& expression_list::get_list()
 {
     return list;
 }
@@ -108,9 +108,9 @@ if_expression::if_expression(expression& condition,
     condition(condition), body(body), otherwise(otherwise)
 {}
 
-type& if_expression::eval()
+std::shared_ptr<type> if_expression::eval()
 {
-    if (condition.eval().to_bool())
+    if (condition.eval()->to_bool())
         return body.eval();
     else
         return otherwise.eval();
@@ -121,30 +121,23 @@ while_expression::while_expression(expression& condition,
     condition(condition), body(body)
 {}
 
-type& while_expression::eval()
+std::shared_ptr<type> while_expression::eval()
 {
-    while (condition.eval().to_bool())
+    while (condition.eval()->to_bool())
         body.eval();
-    return *(new void_type());
+    return std::shared_ptr<type>(new void_type());
 }
 
 var_declare_expression::var_declare_expression(const std::string& name,
-                                               const std::string& type_name,
+                                               expression& type_decl,
                                                context_manager& ctxt) :
-    name(name), type_name(type_name), ctxt(ctxt)
+    name(name), type_decl(type_decl), ctxt(ctxt)
 {}
 
-type& var_declare_expression::eval()
+std::shared_ptr<type> var_declare_expression::eval()
 {
-    if (type_name == "integer")
-        ctxt.get_local().declare(name, *(new mutable_int_type()));
-    else if (type_name == "boolean")
-        ctxt.get_local().declare(name, *(new mutable_bool_type()));
-    else if (type_name == "string")
-        ctxt.get_local().declare(name, *(new mutable_string_type()));
-    else
-        throw std::logic_error("Invalid type name: " + type_name);
-    return *(new void_type());
+    ctxt.get_local().declare(name, type_decl.eval());
+    return std::shared_ptr<type>(new void_type());
 }
 
 const std::string& var_declare_expression::get_name()
@@ -158,15 +151,30 @@ function_invoke_expression::function_invoke_expression(const std::string& id,
     id(id), args(args), ctxt(ctxt)
 {}
 
-type& function_invoke_expression::eval()
+std::shared_ptr<type> function_invoke_expression::eval()
 {
     std::list<std::shared_ptr<type>> arg_values;
     for (const auto& arg : args.get_list())
-        arg_values.push_back(std::shared_ptr<type>(&(arg->eval())));
-    type& func = ctxt.get(id);
+        arg_values.push_back(arg->eval());
+    std::shared_ptr<type> func = ctxt.get(id);
     ctxt.put_local();
-    func.pre_invoke();
-    type& result = func.invoke(arg_values);
+    std::shared_ptr<type> result = func->invoke(arg_values);
     ctxt.pop_local();
     return result;
+}
+
+primitive_type_expression::primitive_type_expression(const std::string& type_name) :
+    type_name(type_name)
+{}
+
+std::shared_ptr<type> primitive_type_expression::eval()
+{
+    if (type_name == "integer")
+        return std::shared_ptr<type>(new mutable_int_type());
+    else if (type_name == "boolean")
+        return std::shared_ptr<type>(new mutable_bool_type());
+    else if (type_name == "string")
+        return std::shared_ptr<type>(new mutable_string_type());
+    else
+        throw std::logic_error("Invalid type name: " + type_name);
 }

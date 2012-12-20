@@ -13,9 +13,10 @@ begin
             fib(n - 2) + fib(n - 1)
         end
     end
-    
 end;
 
+var x : integer;
 begin
-    write(fib(25))
+    x := 22;
+    fib(x)
 end

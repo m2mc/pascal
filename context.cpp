@@ -3,28 +3,38 @@
 #include <stdexcept>
 #include <iostream>
 
-type& context::get(const std::string& name)
+std::shared_ptr<type> context::get(const std::string& name)
 {
-    return *vars.at(name);
+    return vars.at(name);
 }
 
-void context::declare(const std::string& name, type& init_value)
+void context::declare(const std::string& name, std::shared_ptr<type> init_value)
 {
-    vars.insert(std::make_pair(name, std::unique_ptr<type>(&init_value)));
+    vars.insert(std::make_pair(name, init_value));
 }
 
-int native_write(int value)
+void context::redeclare(const std::string& name, std::shared_ptr<type> init_value)
+{
+    vars.at(name) = init_value;
+}
+
+void context::trace()
+{
+    for (const auto& var : vars)
+        std::cout << var.first << " = " << *var.second << std::endl;
+}
+
+void native_write(int value)
 {
     std::cout << value << std::endl;
-    return 42;
 }
 
 context_manager::context_manager()
 {
-    global.declare("write", *(new native_invokeable_type<int, int>(native_write)));
+    // global.declare("write", std::shared_ptr<type>(new native_invokeable_type<void, int>(native_write)));
 }
 
-type& context_manager::get(const std::string& name)
+std::shared_ptr<type> context_manager::get(const std::string& name)
 {
     try
     {
@@ -53,5 +63,19 @@ void context_manager::put_local()
 
 void context_manager::pop_local()
 {
+    // std::cout << "popping local" << std::endl;
     local.pop();
+}
+
+void context_manager::trace()
+{
+    std::stack<context> copy(local);
+    while (!copy.empty())
+    {
+        copy.top().trace();
+        copy.pop();
+        if (!copy.empty())
+            std::cout << "------" << std::endl;
+    }
+    std::cout << "======" << std::endl;
 }
