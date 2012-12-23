@@ -178,3 +178,17 @@ std::shared_ptr<type> primitive_type_expression::eval()
     else
         throw std::logic_error("Invalid type name: " + type_name);
 }
+
+array_type_expression::array_type_expression(expression& inner_type, int size) :
+    inner_type(inner_type), size(size)
+{}
+
+std::shared_ptr<type> array_type_expression::eval()
+{
+    std::vector<std::shared_ptr<type>> array;
+    for (int i = 0; i < size; ++i)
+    {
+        array.push_back(inner_type.eval());
+    }
+    return std::shared_ptr<type>(new array_type(std::move(array)));
+}

@@ -29,9 +29,11 @@ public:
 
     virtual int to_int();
     virtual bool to_bool();
-    virtual const std::string& to_string();
+    virtual std::string to_string();
 
     virtual operator int();
+    virtual operator bool();
+    virtual operator std::string();
 
     virtual std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
 };
@@ -46,6 +48,7 @@ class int_type : public type
 public:
     int_type(int value);
     int to_int();
+    std::string to_string();
     std::shared_ptr<type> operator+(type& another);
     std::shared_ptr<type> operator-(type& another);
     std::shared_ptr<type> operator*(type& another);
@@ -70,6 +73,7 @@ class bool_type : public type
 public:
     bool_type(bool value);
     bool to_bool();
+    std::string to_string();
 
     std::shared_ptr<type> operator~();
 // protected:
@@ -88,7 +92,7 @@ class string_type : public type
 {
 public:
     string_type(const std::string& value);
-    const std::string& to_string();
+    std::string to_string();
 // protected:
     std::string value;
 };
@@ -105,14 +109,14 @@ class void_type : public type
 {
 };
 
-// class array_type : public type
-// {
-// public:
-//     array_type(const std::vector<std::unique_ptr<type>>& value);
-//     std::shared_ptr<type> at(type& index);
-// private:
-//     const std::vector<std::unique_ptr<type>>& value;
-// };
+class array_type : public type
+{
+public:
+    array_type(std::vector<std::shared_ptr<type>>&& value);
+    std::shared_ptr<type> at(type& index);
+private:
+    std::vector<std::shared_ptr<type>> value;
+};
 
 class invokeable_type : public type
 {

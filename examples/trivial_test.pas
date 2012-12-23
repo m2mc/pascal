@@ -1,34 +1,16 @@
-program hello_world;
-
-function foo : boolean
-begin
-    bar(2, 1) 
-end;
-
-function bar(a, b : integer) : integer
-var x : integer;
-begin
-    x := 100000;
-    while x > 0 do x := x - 1 - 2
-end;
-
-function buzz(a : integer) : void
-begin
-
-end;
+program trivial_test;
 
 function inc(a : integer) : void
 begin
     a := a + 1
 end;
 
-var i, j : integer;
-var a, b : boolean;
+var i : integer;
 
 begin
     i := 5;
+    write(i);
     inc(i);
-    inc(5);
-    inc(5);
-    inc(i)
+    write(i);
+    inc(42)     { error! }
 end

@@ -129,3 +129,13 @@ public:
 private:
     std::string type_name;
 };
+
+class array_type_expression : public expression
+{
+public:
+    array_type_expression(expression& inner_type, int size);
+    std::shared_ptr<type> eval();
+private:
+    expression& inner_type;
+    int size;
+};

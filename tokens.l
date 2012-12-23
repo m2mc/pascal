@@ -18,6 +18,7 @@
 "end"                   return T_END;
 "function"              return T_FUNCTION;
 "array"                 return T_ARRAY;
+"of"                    return T_OF;
 
 "if"                    return T_IF;
 "then"                  return T_THEN;
@@ -45,8 +46,8 @@
 "["                     return T_LEFT_SQ;
 "]"                     return T_RIGHT_SQ;
 
-[a-zA-Z_][a-zA-z_0-9]*  yylval.str_value = new std::string(yytext); return T_IDENTIFIER;
-[0-9]+                  yylval.int_value = std::stoi(yytext); return T_INTEGER;
+[a-zA-Z_][a-zA-Z_]*       { yylval.str_value = new std::string(yytext); return T_IDENTIFIER; }
+[0-9]+                  { yylval.int_value = std::stoi(yytext); return T_INTEGER; }
 
 .                       fprintf(stderr, "Unknow token: %s\n", yytext); yyterminate();
 

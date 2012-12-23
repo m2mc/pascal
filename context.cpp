@@ -5,7 +5,14 @@
 
 std::shared_ptr<type> context::get(const std::string& name)
 {
-    return vars.at(name);
+    try
+    {
+        return vars.at(name);
+    }
+    catch (std::exception e)
+    {
+        throw std::logic_error("Variable " + name + " was not declared");
+    }
 }
 
 void context::declare(const std::string& name, std::shared_ptr<type> init_value)
@@ -21,17 +28,17 @@ void context::redeclare(const std::string& name, std::shared_ptr<type> init_valu
 void context::trace()
 {
     for (const auto& var : vars)
-        std::cout << var.first << " = " << *var.second << std::endl;
+        std::cout << var.first << " = " << var.second->to_string() << std::endl;
 }
 
-void native_write(int value)
+void native_write(const std::string& value)
 {
     std::cout << value << std::endl;
 }
 
 context_manager::context_manager()
 {
-    global.declare("write", std::shared_ptr<type>(new native_invokeable_type<void, int>(native_write)));
+    global.declare("write", std::shared_ptr<type>(new native_invokeable_type<void, const std::string&>(native_write)));   
 }
 
 std::shared_ptr<type> context_manager::get(const std::string& name)

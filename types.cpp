@@ -84,7 +84,7 @@ bool type::to_bool()
     throw std::logic_error("Not boolean type");
 }
 
-const std::string& type::to_string()
+std::string type::to_string()
 {
     throw std::logic_error("Not string type");
 }
@@ -92,6 +92,16 @@ const std::string& type::to_string()
 type::operator int()
 {
     return to_int();
+}
+
+type::operator bool()
+{
+    return to_bool();
+}
+
+type::operator std::string()
+{
+    return to_string();
 }
 
 std::shared_ptr<type>type::invoke(const std::list<std::shared_ptr<type>>& arg_values)
@@ -105,6 +115,11 @@ int_type::int_type(int value) : value(value)
 int int_type::to_int()
 {
     return value;
+}
+
+std::string int_type::to_string()
+{
+    return std::to_string(value);
 }
 
 std::shared_ptr<type> int_type::operator+(type& another)
@@ -172,6 +187,11 @@ bool bool_type::to_bool()
     return value;
 }
 
+std::string bool_type::to_string()
+{
+    return std::to_string(value);
+}
+
 std::shared_ptr<type> bool_type::operator~()
 {
     return std::shared_ptr<type>(new bool_type(!value));
@@ -196,7 +216,7 @@ string_type::string_type(const std::string& value) :
     value(value)
 {}
 
-const std::string& string_type::to_string()
+std::string string_type::to_string()
 {
     return value;
 }
@@ -216,19 +236,18 @@ bool mutable_string_type::is_mutable()
     return true;
 }
 
-// array_type::array_type(const std::vector<std::unique_ptr<type>>& value) :
-//     value(value)
-// {}
+array_type::array_type(std::vector<std::shared_ptr<type>>&& value) :
+    value(value)
+{}
 
-// std::shared_ptr<type> array_type::at(type& index)
-// {
-//     return value.at(index.to_int());
-// }
+std::shared_ptr<type> array_type::at(type& index)
+{
+    return value.at(index.to_int());
+}
 
 invokeable_type::invokeable_type(expression_list& arguments, expression& body, context_manager& ctxt) :
     arguments(arguments), body(body), ctxt(ctxt)
 {
-    // do something nicer
     for (const auto& expr : arguments.get_list())
     {
         expression_list* list
