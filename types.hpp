@@ -31,9 +31,7 @@ public:
     virtual bool to_bool();
     virtual std::string to_string();
 
-    virtual operator int();
-    virtual operator bool();
-    virtual operator std::string();
+    virtual void from_string(const std::string& string);
 
     virtual std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
 };
@@ -93,6 +91,7 @@ class string_type : public type
 public:
     string_type(const std::string& value);
     std::string to_string();
+    std::shared_ptr<type> operator+(type& another);
 // protected:
     std::string value;
 };
@@ -102,6 +101,7 @@ class mutable_string_type : public string_type
 public:
     mutable_string_type();
     std::shared_ptr<type> assign(type& another);
+    void from_string(const std::string& string);
     bool is_mutable();
 };
 
@@ -136,14 +136,14 @@ private:
     context_manager& ctxt;
 };
 
-template <typename Return, typename ... Params>
+typedef const std::list<std::shared_ptr<type>>& native_sign;
+typedef std::function<std::shared_ptr<type>(native_sign)> native_func;
+
 class native_invokeable_type : public type
 {
 public:
-    native_invokeable_type(std::function<Return(Params ...)> call);
-    std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
+    native_invokeable_type(native_func call);
+    std::shared_ptr<type> invoke(native_sign arg_values);
 protected:
-    std::function<Return(Params ...)> call;
+    native_func call;
 };
-
-#include "types.inl"

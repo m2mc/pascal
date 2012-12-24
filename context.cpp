@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include "stdpas.hpp"
 
 std::shared_ptr<type> context::get(const std::string& name)
 {
@@ -31,14 +32,10 @@ void context::trace()
         std::cout << var.first << " = " << var.second->to_string() << std::endl;
 }
 
-void native_write(const std::string& value)
-{
-    std::cout << value << std::endl;
-}
-
 context_manager::context_manager()
 {
-    global.declare("write", std::shared_ptr<type>(new native_invokeable_type<void, const std::string&>(native_write)));   
+    stdpas::declare("write", stdpas::write, *this);
+    stdpas::declare("read", stdpas::read, *this);
 }
 
 std::shared_ptr<type> context_manager::get(const std::string& name)

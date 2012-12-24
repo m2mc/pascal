@@ -89,19 +89,9 @@ std::string type::to_string()
     throw std::logic_error("Not string type");
 }
 
-type::operator int()
+void type::from_string(const std::string& string)
 {
-    return to_int();
-}
-
-type::operator bool()
-{
-    return to_bool();
-}
-
-type::operator std::string()
-{
-    return to_string();
+    throw std::logic_error("Cannot instantiate from string");
 }
 
 std::shared_ptr<type>type::invoke(const std::list<std::shared_ptr<type>>& arg_values)
@@ -221,6 +211,17 @@ std::string string_type::to_string()
     return value;
 }
 
+std::shared_ptr<type> string_type::operator+(type& another)
+{
+    string_type& casted = dynamic_cast<string_type&>(another);
+    return std::shared_ptr<type>(new string_type(value + casted.value));
+}
+
+void mutable_string_type::from_string(const std::string& string)
+{
+    value = string;
+}
+
 mutable_string_type::mutable_string_type() : string_type("")
 {}
 
@@ -286,8 +287,11 @@ std::shared_ptr<type> invokeable_type::invoke(const std::list<std::shared_ptr<ty
     return ctxt.get(return_type.get_name());
 }
 
-template <>
-std::shared_ptr<type> invoke_function(std::function<void()> call, const std::list<std::shared_ptr<type>>& arg_values)
+native_invokeable_type::native_invokeable_type(native_func call) :
+    call(call)
+{}
+
+std::shared_ptr<type> native_invokeable_type::invoke(native_sign arg_values)
 {
-    call();
+    return call(arg_values);
 }
