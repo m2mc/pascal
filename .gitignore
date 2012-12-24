@@ -3,5 +3,6 @@ pascal.hpp
 pascal.cpp
 
 *.output
+examples/out.txt
 
 tokens.cpp

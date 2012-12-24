@@ -35,10 +35,10 @@
 
 %type <str_values> id_list optional_params literal_list
 
-%type <expr> expression expression_30 expression_20 expression_10 expression_5 expression_3 simple_expression
+%type <expr> expression expression_37 expression_35 expression_30 expression_20 expression_10 expression_5 expression_3 simple_expression
 %type <expr> expressions optional_expressions codeblock expression_or_block
 %type <expr> comma_expressions optional_comma_expressions
-%type <expr> if_expression while_expression
+%type <expr> closed_if_expression unclosed_if_expression while_expression
 %type <expr> dynamic_expression explicit_function_invoke
 
 %type <expr> vardecl varsection vars_and_code
@@ -145,9 +145,16 @@ comma_expressions:
     | comma_expressions T_COMMA expression  { dynamic_cast<expression_list*>($$)->push_back(*$3); }
 
 expression:
-    expression_30
-    | if_expression
+    expression_37
     | while_expression
+
+expression_37:
+    expression_35
+    | unclosed_if_expression
+
+expression_35:
+    expression_30
+    | closed_if_expression
 
 expression_30:
     expression_20
@@ -195,10 +202,11 @@ explicit_function_invoke:
     T_IDENTIFIER T_OPEN optional_comma_expressions T_CLOSE
                                             { $$ = new function_invoke_expression(*$1, *dynamic_cast<expression_list*>($3), ctxt); }
 
-if_expression:
-    T_IF expression T_THEN codeblock     
-                                            { $$ = new if_expression(*$2, *$4); }
-    | T_IF expression T_THEN codeblock
+unclosed_if_expression:
+    T_IF T_BEGIN expression T_END T_THEN expression_or_block     
+                                            { $$ = new if_expression(*$3, *$6); }
+closed_if_expression:
+    T_IF expression T_THEN expression_or_block
     T_ELSE expression_or_block              { $$ = new if_expression(*$2, *$4, *$6); }
 
 while_expression:

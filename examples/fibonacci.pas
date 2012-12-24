@@ -16,10 +16,8 @@ end;
 var x : integer;
 begin
     x := 0;
-    while x < 23 do begin
-        write(x);
+    while x < 10 do begin
         write(fib(x));
-        write("");
         inc(x)
     end
 end.
