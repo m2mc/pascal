@@ -46,6 +46,8 @@ std::shared_ptr<type> binary_expression::eval()
             return *left.eval() * *right.eval();
         case '/':
             return *left.eval() / *right.eval();
+        case '%':
+            return *left.eval() % *right.eval();
         case '=':
             return *left.eval() == *right.eval();
         case 'a':
@@ -83,14 +85,6 @@ void expression_list::push_back(expression& next)
 
 void expression_list::push_all(expression_list& next_list)
 {
-    //use splice!
-    // while (!next_list.list.empty())
-    // {
-    //     std::unique_ptr<expression> next_expr
-    //         = std::move(next_list.list.front());
-    //     list.push_back(std::move(next_expr));
-    //     next_list.list.pop_front();
-    // }
     list.merge(next_list.list);
 }
 

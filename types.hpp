@@ -18,6 +18,7 @@ public:
     virtual std::shared_ptr<type> operator-(type& another);
     virtual std::shared_ptr<type> operator*(type& another);
     virtual std::shared_ptr<type> operator/(type& another);
+    virtual std::shared_ptr<type> operator%(type& another);
     virtual std::shared_ptr<type> operator==(type& another);
     virtual std::shared_ptr<type> operator>(type& another);
     virtual std::shared_ptr<type> operator<(type& another);
@@ -51,6 +52,7 @@ public:
     std::shared_ptr<type> operator-(type& another);
     std::shared_ptr<type> operator*(type& another);
     std::shared_ptr<type> operator/(type& another);
+    std::shared_ptr<type> operator%(type& another);
     std::shared_ptr<type> operator==(type& another);
     std::shared_ptr<type> operator>(type& another);
     std::shared_ptr<type> operator<(type& another);

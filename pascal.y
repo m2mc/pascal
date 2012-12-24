@@ -1,6 +1,7 @@
 %{
     #include "expression.hpp"
     #include "context.hpp"
+    #include "stdpas.hpp"
     #include "pascal.hpp"
 
     #include <map>
@@ -26,7 +27,8 @@
 %token <int_value> T_INTEGER
 %token <str_value> T_STR_LITERAL
 %token T_PROGRAM T_VAR T_BEGIN T_END T_FUNCTION T_ARRAY T_OF
-%token T_ASSIGN T_PLUS T_MINUS T_STAR T_SLASH T_OPEN T_CLOSE T_SEMICOL T_COL T_COMMA T_EQ
+%token T_ASSIGN T_PLUS T_MINUS T_STAR T_SLASH T_MOD
+%token T_OPEN T_CLOSE T_SEMICOL T_COL T_COMMA T_EQ
 %token T_GREATER T_LESS T_LEFT_SQ T_RIGHT_SQ
 %token T_IF T_THEN T_ELSE T_WHILE T_DO
 %token T_TRUE T_FALSE T_NOT
@@ -149,6 +151,9 @@ expression_10:
                                             { $$ = new binary_expression(*$1, '*', *$3); }
     | expression_10 T_SLASH expression_5
                                             { $$ = new binary_expression(*$1, '/', *$3); }
+    | expression_10 T_MOD expression_5
+                                            { $$ = new binary_expression(*$1, '%', *$3); }
+
 expression_5:
     expression_3
     | T_NOT expression_5                    { $$ = new unary_expression('~', *$2); }
@@ -197,6 +202,7 @@ int main(int argc, char** argv)
         }
         FILE* source = fopen(argv[1], "r");
         yyin = source;
+        stdpas::load_all(ctxt);
         yyparse();
         return 0;
     }

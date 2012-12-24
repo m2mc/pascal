@@ -10,7 +10,7 @@
 class context
 {
 public:
-    virtual std::shared_ptr<type> get(const std::string& name);
+    std::shared_ptr<type> get(const std::string& name);
     void declare(const std::string& name, std::shared_ptr<type> init_value);
     void redeclare(const std::string& name, std::shared_ptr<type> init_value);
     void trace();
@@ -21,7 +21,6 @@ private:
 class context_manager
 {
 public:
-    context_manager();
     std::shared_ptr<type> get(const std::string& name);
 
     context& get_global();

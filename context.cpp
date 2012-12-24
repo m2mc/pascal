@@ -2,7 +2,6 @@
 
 #include <stdexcept>
 #include <iostream>
-#include "stdpas.hpp"
 
 std::shared_ptr<type> context::get(const std::string& name)
 {
@@ -18,7 +17,10 @@ std::shared_ptr<type> context::get(const std::string& name)
 
 void context::declare(const std::string& name, std::shared_ptr<type> init_value)
 {
-    vars.insert(std::make_pair(name, init_value));
+    if (!vars.insert(std::make_pair(name, init_value)).second)
+    {
+        throw std::logic_error("Redeclaration of variable " + name);
+    }
 }
 
 void context::redeclare(const std::string& name, std::shared_ptr<type> init_value)
@@ -30,12 +32,6 @@ void context::trace()
 {
     for (const auto& var : vars)
         std::cout << var.first << " = " << var.second->to_string() << std::endl;
-}
-
-context_manager::context_manager()
-{
-    stdpas::declare("write", stdpas::write, *this);
-    stdpas::declare("read", stdpas::read, *this);
 }
 
 std::shared_ptr<type> context_manager::get(const std::string& name)

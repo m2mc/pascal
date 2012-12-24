@@ -7,8 +7,8 @@
 
 %%
 
-"{".*"}"                /* comment */
-"\""(\\.|[^"\""])*"\""           yylval.str_value = new std::string(yytext, 1, strlen(yytext) - 2); return T_STR_LITERAL;
+"{"(\\.|[^"}"])*"}"     /* comment */
+"\""(\\.|[^"\""])*"\""  yylval.str_value = new std::string(yytext, 1, strlen(yytext) - 2); return T_STR_LITERAL;
 
 [ \t\n]                 /* whitespace */
 
@@ -35,6 +35,7 @@
 "-"                     return T_MINUS;
 "*"                     return T_STAR;
 "/"                     return T_SLASH;
+"%"                     return T_MOD;
 "("                     return T_OPEN;
 ")"                     return T_CLOSE;
 ";"                     return T_SEMICOL;

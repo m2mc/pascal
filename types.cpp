@@ -39,6 +39,11 @@ std::shared_ptr<type> type::operator/(type& another)
     throw std::logic_error("Operator / is not applicable");
 }
 
+std::shared_ptr<type> type::operator%(type& another)
+{
+    throw std::logic_error("Operator % is not applicable");
+}
+
 std::shared_ptr<type> type::operator==(type& another)
 {
     throw std::logic_error("Operator = is not applicable");
@@ -134,6 +139,12 @@ std::shared_ptr<type> int_type::operator/(type& another)
 {
     int_type&& casted = dynamic_cast<int_type&&>(another);
     return std::shared_ptr<type>(new int_type(value / casted.value));
+}
+
+std::shared_ptr<type> int_type::operator%(type& another)
+{
+    int_type&& casted = dynamic_cast<int_type&&>(another);
+    return std::shared_ptr<type>(new int_type(value % casted.value));
 }
 
 std::shared_ptr<type> int_type::operator==(type& another)
@@ -283,7 +294,7 @@ invokeable_type::invokeable_type(expression_list& arguments, var_declare_express
 std::shared_ptr<type> invokeable_type::invoke(const std::list<std::shared_ptr<type>>& arg_values)
 {
     if (arg_values.size() != signature.size())
-        throw std::logic_error("Incorrect number of arguments");
+        throw std::logic_error("Wrong number of arguments");
     return_type.eval();
     arguments.eval();
     auto iter = arg_values.begin();
