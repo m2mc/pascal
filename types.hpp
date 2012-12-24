@@ -106,7 +106,12 @@ public:
 };
 
 class void_type : public type
+{};
+
+class mutable_void_type : public void_type
 {
+public:
+    std::shared_ptr<type> assign(type& another);
 };
 
 class array_type : public type
@@ -121,10 +126,11 @@ private:
 class invokeable_type : public type
 {
 public:
-    invokeable_type(expression_list& arguments, expression& body, context_manager& ctxt);
+    invokeable_type(expression_list& arguments, var_declare_expression& return_type, expression& body, context_manager& ctxt);
     std::shared_ptr<type> invoke(const std::list<std::shared_ptr<type>>& arg_values);
 private:
     expression& arguments;
+    var_declare_expression& return_type;
     expression& body;
     std::list<std::shared_ptr<var_declare_expression>> signature;
     context_manager& ctxt;

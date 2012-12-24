@@ -236,6 +236,12 @@ bool mutable_string_type::is_mutable()
     return true;
 }
 
+std::shared_ptr<type> mutable_void_type::assign(type& another)
+{
+    void_type& casted = dynamic_cast<void_type&>(another);
+    return std::shared_ptr<type>(new void_type());
+}
+
 array_type::array_type(std::vector<std::shared_ptr<type>>&& value) :
     value(value)
 {}
@@ -245,8 +251,8 @@ std::shared_ptr<type> array_type::at(type& index)
     return value.at(index.to_int());
 }
 
-invokeable_type::invokeable_type(expression_list& arguments, expression& body, context_manager& ctxt) :
-    arguments(arguments), body(body), ctxt(ctxt)
+invokeable_type::invokeable_type(expression_list& arguments, var_declare_expression& return_type, expression& body, context_manager& ctxt) :
+    arguments(arguments), return_type(return_type), body(body), ctxt(ctxt)
 {
     for (const auto& expr : arguments.get_list())
     {
@@ -265,6 +271,7 @@ std::shared_ptr<type> invokeable_type::invoke(const std::list<std::shared_ptr<ty
 {
     if (arg_values.size() != signature.size())
         throw std::logic_error("Incorrect number of arguments");
+    return_type.eval();
     arguments.eval();
     auto iter = arg_values.begin();
     for (const auto& decl : signature)
@@ -275,7 +282,8 @@ std::shared_ptr<type> invokeable_type::invoke(const std::list<std::shared_ptr<ty
             // ctxt.get(decl->get_name())->assign(**iter);
         ++iter;
     }
-    return body.eval();
+    body.eval();
+    return ctxt.get(return_type.get_name());
 }
 
 template <>

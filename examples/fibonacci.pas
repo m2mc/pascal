@@ -9,13 +9,13 @@ end;
 function fib(n : integer) : integer
 begin
     if n = 0 then begin
-        0
+        fib := 0
     end
     else
         if n = 1 then begin
-            1
+            fib := 1
         end
-        else fib(n - 2) + fib(n - 1)
+        else fib := fib(n - 2) + fib(n - 1)
 end;
 
 var x : integer;
@@ -24,6 +24,7 @@ begin
     while x < 31 do begin
         write(x);
         write(fib(x));
+        write("");
         inc(x)
     end
 end

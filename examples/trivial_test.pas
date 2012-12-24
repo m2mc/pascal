@@ -11,6 +11,5 @@ begin
     i := 5;
     write(i);
     inc(i);
-    write(i);
-    inc(42)     { error! }
+    write(i)
 end

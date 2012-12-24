@@ -59,8 +59,8 @@ function_decls:
 function_decl:
     T_FUNCTION T_IDENTIFIER
     optional_signature_entries
-    T_COL T_IDENTIFIER
-    vars_and_code                           { ctxt.get_global().declare(*$2, std::shared_ptr<type>(new invokeable_type(*dynamic_cast<expression_list*>($3), *$6, ctxt))); }
+    T_COL type_expression
+    vars_and_code                           { ctxt.get_global().declare(*$2, std::shared_ptr<type>(new invokeable_type(*dynamic_cast<expression_list*>($3), *(new var_declare_expression(*$2, *$5, ctxt)), *$6, ctxt))); }
 
 vars_and_code:
     varsection codeblock                    { $$ = $1;

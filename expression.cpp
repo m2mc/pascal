@@ -17,7 +17,15 @@ id(id), ctxt(ctxt)
 
 std::shared_ptr<type> dynamic_expression::eval()
 {
-    return ctxt.get(id);
+    try
+    {
+        std::shared_ptr<type> expr = ctxt.get_global().get(id);
+        return expr->invoke(std::list<std::shared_ptr<type>>());
+    }
+    catch (std::exception e)
+    {
+        return ctxt.get_local().get(id);
+    }
 }
 
 binary_expression::binary_expression(expression& left,
@@ -156,7 +164,7 @@ std::shared_ptr<type> function_invoke_expression::eval()
     std::list<std::shared_ptr<type>> arg_values;
     for (const auto& arg : args.get_list())
         arg_values.push_back(arg->eval());
-    std::shared_ptr<type> func = ctxt.get(id);
+    std::shared_ptr<type> func = ctxt.get_global().get(id);
     ctxt.put_local();
     std::shared_ptr<type> result = func->invoke(arg_values);
     ctxt.pop_local();
@@ -175,6 +183,8 @@ std::shared_ptr<type> primitive_type_expression::eval()
         return std::shared_ptr<type>(new mutable_bool_type());
     else if (type_name == "string")
         return std::shared_ptr<type>(new mutable_string_type());
+    else if (type_name == "void")
+        return std::shared_ptr<type>(new mutable_void_type());
     else
         throw std::logic_error("Invalid type name: " + type_name);
 }
