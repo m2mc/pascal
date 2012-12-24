@@ -7,4 +7,3 @@ for name, dirs, files in os.walk('examples'):
         if sample.endswith('.pas'):
             print('===', 'executing', sample, '===')
             os.system('./pascal examples/' + sample)
-            

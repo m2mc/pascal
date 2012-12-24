@@ -59,6 +59,16 @@ std::shared_ptr<type> type::operator<(type& another)
     throw std::logic_error("Operator < is not applicable");
 }
 
+std::shared_ptr<type> type::operator>=(type& another)
+{
+    return value_of((*this > another)->to_bool() || (*this == another)->to_bool());
+}
+
+std::shared_ptr<type> type::operator<=(type& another)
+{
+    return value_of((*this < another)->to_bool() || (*this == another)->to_bool());
+}
+
 std::shared_ptr<type> type::operator~()
 {
     throw std::logic_error("Operator ~ is not applicable");

@@ -29,8 +29,8 @@
 %token T_PROGRAM T_VAR T_BEGIN T_END T_FUNCTION T_ARRAY T_OF
 %token T_ASSIGN T_PLUS T_MINUS T_STAR T_SLASH T_MOD
 %token T_OPEN T_CLOSE T_SEMICOL T_COL T_COMMA T_DOT T_EQ
-%token T_GREATER T_LESS T_LEFT_SQ T_RIGHT_SQ
-%token T_IF T_THEN T_ELSE T_WHILE T_DO
+%token T_GR_EQ T_LE_EQ T_GREATER T_LESS T_LEFT_SQ T_RIGHT_SQ
+%token T_IF T_THEN T_ELSE T_WHILE T_DO T_FOR
 %token T_TRUE T_FALSE T_NOT
 
 %type <str_values> id_list optional_params literal_list
@@ -38,7 +38,7 @@
 %type <expr> expression expression_37 expression_35 expression_30 expression_20 expression_10 expression_5 expression_3 simple_expression
 %type <expr> expressions optional_expressions codeblock expression_or_block
 %type <expr> comma_expressions optional_comma_expressions
-%type <expr> closed_if_expression unclosed_if_expression while_expression
+%type <expr> closed_if_expression unclosed_if_expression while_expression for_expression
 %type <expr> dynamic_expression explicit_function_invoke
 
 %type <expr> vardecl varsection vars_and_code
@@ -147,6 +147,7 @@ comma_expressions:
 expression:
     expression_37
     | while_expression
+    | for_expression
 
 expression_37:
     expression_35
@@ -162,6 +163,8 @@ expression_30:
     | expression_30 T_EQ expression_20      { $$ = new binary_expression(*$1, '=', *$3); }
     | expression_30 T_GREATER expression_20 { $$ = new binary_expression(*$1, '>', *$3); }
     | expression_30 T_LESS expression_20    { $$ = new binary_expression(*$1, '<', *$3); }
+    | expression_30 T_GR_EQ expression_20   { $$ = new binary_expression(*$1, 'g', *$3); }
+    | expression_30 T_LE_EQ expression_20   { $$ = new binary_expression(*$1, 'l', *$3); }
 
 expression_20:
     expression_10
@@ -212,6 +215,36 @@ closed_if_expression:
 while_expression:
     T_WHILE expression T_DO expression_or_block 
                                             { $$ = new while_expression(*$2, *$4); }
+
+for_expression:
+    T_FOR expression T_IDENTIFIER expression T_DO expression_or_block
+                                            { binary_expression* init = dynamic_cast<binary_expression*>($2);
+                                              if (init == nullptr)
+                                              {
+                                                throw std::logic_error("Invalid for loop initialization");
+                                              }
+                                              else
+                                              {
+                                                expression& counter = init->get_left();
+                                                expression_list* counters = new expression_list();
+                                                counters->push_back(counter);
+                                                binary_expression* condition;
+                                                expression* iter;
+                                                if (*$3 == "to")
+                                                {
+                                                    condition = new binary_expression(counter, 'l', *$4);
+                                                    iter = new function_invoke_expression("inc", *counters, ctxt);
+                                                }
+                                                else if (*$3 == "downto")   
+                                                {   
+                                                    condition = new binary_expression(counter, 'g', *$4);                                              
+                                                    iter = new function_invoke_expression("dec", *counters, ctxt);
+                                                }
+                                                else
+                                                    throw std::logic_error("Invalid for loop iteration");
+                                                $$ = new for_expression(*init, *condition, *iter, *$6);
+                                              }
+                                            }
 
 %%
 

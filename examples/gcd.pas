@@ -2,7 +2,7 @@ program gcd;
 
 function gcd(a, b : integer) : integer
 begin
-    if b = 0 then begin gcd := a end
+    if b = 0 then gcd := a
     else gcd := gcd(b, a % b)
 end;
 

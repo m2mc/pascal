@@ -22,6 +22,8 @@ public:
     virtual std::shared_ptr<type> operator==(type& another);
     virtual std::shared_ptr<type> operator>(type& another);
     virtual std::shared_ptr<type> operator<(type& another);
+    virtual std::shared_ptr<type> operator>=(type& another);
+    virtual std::shared_ptr<type> operator<=(type& another);
     virtual std::shared_ptr<type> operator~();
     virtual std::shared_ptr<type> assign(type& another);
     virtual std::shared_ptr<type> at(type& index);

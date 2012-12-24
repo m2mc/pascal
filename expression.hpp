@@ -42,6 +42,8 @@ public:
                       char op,
                       expression& right);
     std::shared_ptr<type> eval();
+    expression& get_left();
+    expression& get_right();
 private:
     expression& left;
     char op;
@@ -91,6 +93,21 @@ public:
     std::shared_ptr<type> eval();
 private:
     expression& condition;
+    expression& body;
+};
+
+class for_expression : public expression
+{
+public:
+    for_expression(expression& init,
+                   expression& condition,
+                   expression& iter,
+                   expression& body);
+    std::shared_ptr<type> eval();
+private:
+    expression& init;
+    expression& condition;
+    expression& iter;
     expression& body;
 };
 

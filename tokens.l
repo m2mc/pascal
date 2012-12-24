@@ -25,6 +25,7 @@
 "else"                  return T_ELSE;
 "while"                 return T_WHILE;
 "do"                    return T_DO;
+"for"                   return T_FOR;
 
 "true"                  return T_TRUE;
 "false"                 return T_FALSE;
@@ -43,6 +44,8 @@
 ","                     return T_COMMA;
 "."                     return T_DOT;
 "="                     return T_EQ;
+">="                    return T_GR_EQ;
+"<="                    return T_LE_EQ;
 ">"                     return T_GREATER;
 "<"                     return T_LESS;
 "["                     return T_LEFT_SQ;

@@ -58,10 +58,25 @@ std::shared_ptr<type> binary_expression::eval()
             return *left.eval() < *right.eval();
         case '[':
             return left.eval()->at(*right.eval());
+        case 'g':
+            return *left.eval() >= *right.eval();
+        case 'l':
+            return *left.eval() <= *right.eval();
         default:
             throw std::invalid_argument("Unimplemented operator: " + std::string(&op, 1));
     }
 }
+
+expression& binary_expression::get_left()
+{
+    return left;
+}
+
+expression& binary_expression::get_right()
+{
+    return right;
+}
+
 
 unary_expression::unary_expression(char op, expression& expr) :
     op(op), expr(expr)
@@ -127,6 +142,22 @@ std::shared_ptr<type> while_expression::eval()
 {
     while (condition.eval()->to_bool())
         body.eval();
+    return std::shared_ptr<type>(new void_type());
+}
+
+for_expression::for_expression(expression& init,
+               expression& condition,
+               expression& iter,
+               expression& body) :
+    init(init), condition(condition), iter(iter), body(body)
+{}
+
+std::shared_ptr<type> for_expression::eval()
+{
+    for (init.eval(); condition.eval()->to_bool(); iter.eval())
+    {
+        body.eval();
+    }
     return std::shared_ptr<type>(new void_type());
 }
 
