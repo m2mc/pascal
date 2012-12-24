@@ -1,4 +1,5 @@
 program input_test;
+
 var name : string;
 var a, b, c : integer;
 begin
@@ -9,4 +10,4 @@ begin
     write("You can input three numbers in a row. Try it!");
     read(a, b, c);
     write("You entered", a, "and", b, "and", c)
-end
+end.

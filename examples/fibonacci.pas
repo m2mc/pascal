@@ -1,10 +1,5 @@
 program fibonacci;
 
-function inc(n : integer) : void
-begin
-    n := n + 1
-end;
-
 { very slow! }
 function fib(n : integer) : integer
 begin
@@ -21,10 +16,10 @@ end;
 var x : integer;
 begin
     x := 0;
-    while x < 31 do begin
+    while x < 23 do begin
         write(x);
         write(fib(x));
         write("");
         inc(x)
     end
-end
+end.

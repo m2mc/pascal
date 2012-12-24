@@ -11,4 +11,4 @@ begin
     write("Enter a and b:");
     read(a, b);
     write("GCD(a, b) =", gcd(a, b))
-end
+end.

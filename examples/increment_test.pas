@@ -13,4 +13,4 @@ begin
     write(i);
     my_inc(i); { declared one }
     write(i)
-end
+end.

@@ -16,6 +16,7 @@ void load_all(context_manager& ctxt)
     declare("write", write, ctxt);
     declare("read", read, ctxt);
     declare("inc", inc, ctxt);
+    declare("dec", dec, ctxt);
 }
 
 void check_count(native_sign values, int correct)
@@ -50,6 +51,14 @@ std::shared_ptr<type> inc(native_sign values)
     check_count(values, 1);
     std::shared_ptr<type> value = values.front();
     value->assign(*std::shared_ptr<type>(new int_type(value->to_int() + 1)));
+    return std::shared_ptr<type>(new void_type());
+}
+
+std::shared_ptr<type> dec(native_sign values)
+{
+    check_count(values, 1);
+    std::shared_ptr<type> value = values.front();
+    value->assign(*std::shared_ptr<type>(new int_type(value->to_int() - 1)));
     return std::shared_ptr<type>(new void_type());
 }
 

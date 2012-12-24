@@ -41,6 +41,7 @@
 ";"                     return T_SEMICOL;
 ":"                     return T_COL;
 ","                     return T_COMMA;
+"."                     return T_DOT;
 "="                     return T_EQ;
 ">"                     return T_GREATER;
 "<"                     return T_LESS;

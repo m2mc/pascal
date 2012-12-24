@@ -28,12 +28,12 @@
 %token <str_value> T_STR_LITERAL
 %token T_PROGRAM T_VAR T_BEGIN T_END T_FUNCTION T_ARRAY T_OF
 %token T_ASSIGN T_PLUS T_MINUS T_STAR T_SLASH T_MOD
-%token T_OPEN T_CLOSE T_SEMICOL T_COL T_COMMA T_EQ
+%token T_OPEN T_CLOSE T_SEMICOL T_COL T_COMMA T_DOT T_EQ
 %token T_GREATER T_LESS T_LEFT_SQ T_RIGHT_SQ
 %token T_IF T_THEN T_ELSE T_WHILE T_DO
 %token T_TRUE T_FALSE T_NOT
 
-%type <str_values> id_list
+%type <str_values> id_list optional_params literal_list
 
 %type <expr> expression expression_30 expression_20 expression_10 expression_5 expression_3 simple_expression
 %type <expr> expressions optional_expressions codeblock expression_or_block
@@ -48,12 +48,20 @@
 %%
 
 program:
-    header function_decls vars_and_code
+    header function_decls vars_and_code T_DOT
                                             { ctxt.put_local();
                                               $3->eval(); }
 
 header:
-    T_PROGRAM T_IDENTIFIER T_SEMICOL
+    T_PROGRAM T_IDENTIFIER optional_params T_SEMICOL
+                                            { if ($3->size() == 2)
+                                              {
+                                                freopen($3->front().c_str(), "r", stdin);
+                                                freopen($3->back().c_str(), "w", stdout);                                                
+                                              }
+                                              else if ($3->size() != 0)
+                                                  throw std::logic_error("Incorrect program params");
+                                            }
 
 function_decls:
     /* empty */
@@ -99,9 +107,17 @@ type_expression:
     | T_ARRAY T_INTEGER T_OF type_expression
                                             { $$ = new array_type_expression(*$4, $2); }
 
+optional_params:
+    /* empty */                             { $$ = new std::list<std::string>(); }
+    | T_OPEN literal_list T_CLOSE           { $$ = $2; }
+
 id_list:
     T_IDENTIFIER                            { $$ = new std::list<std::string>(); $$->push_back(*$1); }
     | id_list T_COMMA T_IDENTIFIER          { $1->push_back(*$3); }
+
+literal_list:
+    T_STR_LITERAL                           { $$ = new std::list<std::string>(); $$->push_back(*$1); }
+    | literal_list T_COMMA T_STR_LITERAL    { $1->push_back(*$3); }
 
 codeblock:
     T_BEGIN optional_expressions T_END      { $$ = $2; }
@@ -204,6 +220,8 @@ int main(int argc, char** argv)
         yyin = source;
         stdpas::load_all(ctxt);
         yyparse();
+        fclose(stdin);
+        fclose(stdout);
         return 0;
     }
     catch(std::exception& ex)
