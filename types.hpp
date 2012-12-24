@@ -63,6 +63,7 @@ class mutable_int_type : public int_type
 public:
     mutable_int_type();
     std::shared_ptr<type> assign(type& another);
+    void from_string(const std::string& string);
     bool is_mutable();
 };
 

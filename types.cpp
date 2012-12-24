@@ -164,6 +164,18 @@ std::shared_ptr<type> mutable_int_type::assign(type& another)
     return std::shared_ptr<type>(new void_type());
 }
 
+void mutable_int_type::from_string(const std::string& string)
+{
+    try
+    {
+        value = std::stoi(string);
+    }
+    catch (std::exception e)
+    {
+        throw std::logic_error("Cannot convert \"" + string + "\" to integer");
+    }
+}
+
 bool mutable_int_type::is_mutable()
 {
     return true;
